@@ -16,12 +16,12 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.4 is available.
+Huenicorn 1.0.5 is available.
 
-This revision brings
+### This revision brings:
 
-* Wayland support
-* Automatic grabber selection for X.org / Wayland sessions
+* Simpler color computation
+* Choice between subsampling interpolations in Web UI's advanced settings
 
 ## Getting Started
 
