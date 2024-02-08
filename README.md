@@ -223,10 +223,12 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
+* 1.0.5
+  * Add choice between subsampling interpolations in Web UI's advanced settings
 * 1.0.4
-- * Adding support for Wayland graphic sessions
+  * Add support for Wayland graphic sessions
 * 1.0.3
-- * Moving to Mbed-TLS 3.4
+  * Move to Mbed-TLS 3.4
 * 1.0.2
   * Performance improvement
 * 1.0.1
