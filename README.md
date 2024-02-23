@@ -40,7 +40,7 @@ Huenicorn 1.0.5 is available.
 * [Mbed-TLS](https://github.com/Mbed-TLS/mbedtls)
 * [GLM](https://github.com/g-truc/glm)
 * [nlohmann-json](https://github.com/nlohmann/json)
-* [CurlPP](https://github.com/jpbarrette/curlpp)
+* [Curl](https://curl.se)
 
 
 #### Dependencies intallation
@@ -55,9 +55,9 @@ Huenicorn 1.0.5 is available.
   sudo pacman -S wayland glib2 pipewire
 
   # Mandatory
-  sudo pacman -S opencv mbedtls glm nlohmann-json
+  sudo pacman -S curl opencv mbedtls glm nlohmann-json
   # Some more dependencies from AUR
-  yay -S restbed libcurlpp
+  yay -S restbed
 ```
 </details>
 
@@ -71,7 +71,7 @@ These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to bui
 sudo zypper install opencv-devel libopencv408 python311-jsonschema glm-devel nlohmann_json-devel
 ```
 
-Additionally you have to build the curlpp, Restbed and Mbed-TLS from source from the links above.   
+Additionally you have to build the Restbed and Mbed-TLS from source from the links above.   
 Follow the build instructions in their respective README files and copy them to the appropriate place, as some of them don't do that automatically (usually /usr/local/lib64/ for libraries (check LD_LIBRARY_PATH) or /usr/local/include/ for includes)
 
 </details>
