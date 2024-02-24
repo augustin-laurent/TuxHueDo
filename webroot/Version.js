@@ -1,6 +1,6 @@
 function getVersion()
 {
-  let versionPromise = RequestUtils.get("/version");
+  let versionPromise = RequestUtils.get("/api/version");
   versionPromise.then((data) => {
     let versionSection = document.getElementById("versionSection");
     let text = `Version ${data.version}`;

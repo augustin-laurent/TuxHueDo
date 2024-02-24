@@ -108,7 +108,7 @@ namespace Huenicorn
   }
 
 
-  nlohmann::json HuenicornCore::autoDetectedBridge() const
+  nlohmann::json HuenicornCore::autodetectedBridge() const
   {
     std::string bridgeAddress;
     try{

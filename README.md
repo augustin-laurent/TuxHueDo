@@ -36,7 +36,7 @@ Huenicorn 1.0.5 is available.
 
 * [X.Org](https://xorg.freedesktop.org) or [Wayland](https://wayland.freedesktop.org)
 * [OpenCV](https://github.com/opencv/opencv)
-* [Restbed](https://github.com/Corvusoft/restbed)
+* [Crow](https://crowcpp.org/master)
 * [Mbed-TLS](https://github.com/Mbed-TLS/mbedtls)
 * [GLM](https://github.com/g-truc/glm)
 * [nlohmann-json](https://github.com/nlohmann/json)
@@ -57,7 +57,7 @@ Huenicorn 1.0.5 is available.
   # Mandatory
   sudo pacman -S curl opencv mbedtls glm nlohmann-json
   # Some more dependencies from AUR
-  yay -S restbed
+  yay -S crow
 ```
 </details>
 
@@ -71,7 +71,7 @@ These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to bui
 sudo zypper install opencv-devel libopencv408 python311-jsonschema glm-devel nlohmann_json-devel
 ```
 
-Additionally you have to build the Restbed and Mbed-TLS from source from the links above.   
+Additionally you have to build Mbed-TLS from source from the links above.   
 Follow the build instructions in their respective README files and copy them to the appropriate place, as some of them don't do that automatically (usually /usr/local/lib64/ for libraries (check LD_LIBRARY_PATH) or /usr/local/include/ for includes)
 
 </details>
@@ -94,15 +94,9 @@ sudo apt-get install libglib2.0-dev libpipewire-0.3-dev
 # Mandatory libraries
 sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev
 
-# Restbed has to be compiled from the source repository because the package version is outdated:
+# Crow .deb installer can be downloaded from deb on their repository: https://github.com/CrowCpp/Crow/releases/tag/v1.0+5
+sudo dpkg -i crow-v1.0+5.deb
 
-git clone --recursive https://github.com/corvusoft/restbed.git
-cd restbed
-mkdir build && cd build
-cmake -DBUILD_SSL=OFF -DBUILD_TESTS=OFF ..
-sudo make install
-sudo cp ../distribution/library/librestbed.* /usr/lib
-sudo cp -r ../distribution/include/* /usr/include
 
 # Make sure to use gcc/g++ v12
 sudo apt install gcc-12 g++-12
