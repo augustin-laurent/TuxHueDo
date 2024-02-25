@@ -23,8 +23,8 @@ namespace Huenicorn
   class DtlsClient
   {
     // Constants
-    static constexpr std::string Hostname = "Hue";
-    static constexpr unsigned HandshakeAttempts = 4;
+    static const std::string Hostname;
+    static const unsigned HandshakeAttempts;
 
   public:
     // Constructor / destructor

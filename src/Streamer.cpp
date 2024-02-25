@@ -5,8 +5,10 @@
 
 namespace Huenicorn
 {
+  const std::string Streamer::Port = "2100";
+
   Streamer::Streamer(const Credentials& credentials, const std::string& bridgeAddress):
-    m_dtlsClient(credentials, bridgeAddress, PORT)
+    m_dtlsClient(credentials, bridgeAddress, Port)
   {
     try{
       m_dtlsClient.init();

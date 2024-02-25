@@ -9,14 +9,14 @@
 
 namespace Huenicorn
 {
-  static constexpr std::string PORT = "2100";
-
   /**
    * @brief Wrapper around UDP requests to submit color data to the bridge
    * 
    */
   class Streamer
   {
+    static const std::string Port;
+
     struct HuestreamHeader
     {
       char protocolName[9] = {'H', 'u', 'e', 'S', 't', 'r', 'e', 'a', 'm'};

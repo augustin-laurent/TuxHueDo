@@ -11,6 +11,9 @@
 
 namespace Huenicorn
 {
+  const std::string DtlsClient::Hostname = "Hue";
+  const unsigned DtlsClient::HandshakeAttempts = 4;
+
   static void debugCallback(void* ctx, int level, const char* file, int line, const char* str)
   {
     const char* p, *basename;
