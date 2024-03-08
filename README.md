@@ -49,17 +49,38 @@ Huenicorn 1.0.5 is available.
 <summary>ArchLinux</summary>
 
 ```bash
-  # In the unlikely case you don't have one of them already:
-  sudo pacman -S xorg-server
-  # And/or
-  sudo pacman -S wayland glib2 pipewire
+# In the unlikely case you don't have one of them already:
+sudo pacman -S xorg-server
+# And/or
+sudo pacman -S wayland glib2 pipewire
 
-  # Mandatory
-  sudo pacman -S opencv mbedtls glm nlohmann-json
-  # Some more dependencies from AUR
-  yay -S restbed libcurlpp
+# Mandatory
+sudo pacman -S opencv mbedtls glm nlohmann-json
+# Some more dependencies from AUR
+yay -S restbed libcurlpp
 ```
 </details>
+
+<details>
+
+<summary>Fedora</summary>
+
+```bash
+# Install dependencies
+sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel curl-devel curlpp-devel mbedtls-devel libXrandr-devel glm-devel
+
+# Clone, build, and install restbed (not provided in Fedora repos)
+git clone https://github.com/Corvusoft/restbed
+cd restbed
+mkdir build && cd build
+cmake -DBUILD_SSL=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
+make && sudo make install
+
+# Fix resetbed's shared object location
+sudo cp ../distribution/library/librestbed.* /usr/lib
+```
+</details>
+
 
 <details>
 <summary>OpenSUSE Tumbleweed</summary>
