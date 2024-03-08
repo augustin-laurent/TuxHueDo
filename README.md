@@ -61,6 +61,24 @@ Huenicorn 1.0.5 is available.
 ```
 </details>
 
+
+<details>
+
+<summary>Fedora</summary>
+
+```bash
+# Install dependencies
+sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel curl-devel mbedtls-devel libXrandr-devel glm-devel
+
+# CrowCPP installation steps ( summarized from : https://crowcpp.org/master/getting_started/setup/linux )
+git clone https://github.com/CrowCpp/Crow.git
+mkdir build && cd build
+cmake .. -DCROW_BUILD_EXAMPLES=OFF -DCROW_BUILD_TESTS=OFF
+sudo make install
+```
+</details>
+
+
 <details>
 <summary>OpenSUSE Tumbleweed</summary>
 <br/>
