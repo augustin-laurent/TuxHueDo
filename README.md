@@ -68,13 +68,13 @@ Huenicorn 1.0.5 is available.
 
 ```bash
 # Install dependencies
-sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel curl-devel mbedtls-devel libXrandr-devel glm-devel
+sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel asio-devel curl-devel mbedtls-devel libXrandr-devel glm-devel
 
-# CrowCPP installation steps ( summarized from : https://crowcpp.org/master/getting_started/setup/linux )
-git clone https://github.com/CrowCpp/Crow.git
-mkdir build && cd build
-cmake .. -DCROW_BUILD_EXAMPLES=OFF -DCROW_BUILD_TESTS=OFF
-sudo make install
+# Crow
+# Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
+# Extract the archive and copy its content to the target directories:
+sudo cp -r include/ /usr/local/include
+sudo cp -r lib/ /usr/local/lib
 ```
 </details>
 
@@ -86,7 +86,14 @@ sudo make install
 These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to build and run Huenicorn:  
 
 ```bash
-sudo zypper install opencv-devel libopencv408 python311-jsonschema glm-devel nlohmann_json-devel
+sudo zypper install opencv-devel libopencv408 python311-jsonschema asio-devel glm-devel nlohmann_json-devel
+
+# Crow
+# Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
+# Extract the archive and copy its content to the target directories:
+sudo cp -r include/ /usr/local/include
+sudo cp -r lib/ /usr/local/lib
+
 ```
 
 Additionally you have to build Mbed-TLS from source from the links above.   
