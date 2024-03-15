@@ -16,12 +16,13 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.5 is available.
+Huenicorn 1.0.6 is available.
 
 ### This revision brings:
 
-* Simpler color computation
-* Choice between subsampling interpolations in Web UI's advanced settings
+* Better code compatibility for Clang compiler
+* Remove CurlPP dependency
+* Replace web backend with CrowCPP instead of Restbed
 
 ## Getting Started
 
@@ -242,6 +243,8 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
+* 1.0.6 (Latest)
+  * Library replacements and better compiler support
 * 1.0.5
   * Add choice between subsampling interpolations in Web UI's advanced settings
 * 1.0.4
