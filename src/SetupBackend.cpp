@@ -10,65 +10,43 @@ using namespace std::chrono_literals;
 namespace Huenicorn
 {
   SetupBackend::SetupBackend(HuenicornCore* huenicornCore):
-  IRestServer("webroot"),
+  IRestServer("webroot", "setup.html"),
   m_huenicornCore(huenicornCore)
   {
-    m_indexFile = "setup.html";
+    CROW_ROUTE(m_app, "/api/finishSetup").methods(crow::HTTPMethod::POST)
+    ([this](const crow::request& /*req*/, crow::response& res){
+      _finish(res);
+    });
 
-    m_contentTypes = {
-      {".js", "text/javascript"},
-      {".html", "text/html"},
-      {".css", "text/css"}
-    };
+    CROW_ROUTE(m_app, "/api/abort").methods(crow::HTTPMethod::POST)
+    ([this](const crow::request& /*req*/, crow::response& res){
+      _abort(res);
+    });
 
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/finishSetup");
-      resource->set_method_handler("POST", [this](SharedSession session){_finish(session);});
-      m_service.publish(resource);
-    }
+    CROW_ROUTE(m_app, "/api/autodetectBridge").methods(crow::HTTPMethod::GET)
+    ([this](const crow::request& /*req*/, crow::response& res){
+      _autodetectBridge(res);
+    });
+  
+    CROW_ROUTE(m_app, "/api/configFilePath").methods(crow::HTTPMethod::GET)
+    ([this](const crow::request& /*req*/, crow::response& res){
+      _configFilePath(res);
+    });
 
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/abort");
-      resource->set_method_handler("POST", [this](SharedSession session){_abort(session);});
-      m_service.publish(resource);
-    }
+    CROW_ROUTE(m_app, "/api/validateBridgeAddress").methods(crow::HTTPMethod::PUT)
+    ([this](const crow::request& req, crow::response& res){
+      _validateBridgeAddress(req, res);
+    });
 
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/autoDetectBridge");
-      resource->set_method_handler("GET", [this](SharedSession session){_autoDetectBridge(session);});
-      m_service.publish(resource);
-    }
-    
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/configFilePath");
-      resource->set_method_handler("GET", [this](SharedSession session){_configFilePath(session);});
-      m_service.publish(resource);
-    }
+    CROW_ROUTE(m_app, "/api/validateCredentials").methods(crow::HTTPMethod::PUT)
+    ([this](const crow::request& req, crow::response& res){
+      _validateCredentials(req, res);
+    });
 
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/validateBridgeAddress");
-      resource->set_method_handler("PUT", [this](SharedSession session){_validateBridgeAddress(session);});
-      m_service.publish(resource);
-    }
-
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/validateCredentials");
-      resource->set_method_handler("PUT", [this](SharedSession session){_validateCredentials(session);});
-      m_service.publish(resource);
-    }
-
-    {
-      auto resource = std::make_shared<restbed::Resource>();
-      resource->set_path("/registerNewUser");
-      resource->set_method_handler("PUT", [this](SharedSession session){_registerNewUser(session);});
-      m_service.publish(resource);
-    }
+    CROW_ROUTE(m_app, "/api/registerNewUser").methods(crow::HTTPMethod::PUT)
+    ([this](const crow::request& /*req*/, crow::response& res){
+      _registerNewUser(res);
+    });
 
     m_webfileBlackList.insert("index.html");
   }
@@ -93,12 +71,12 @@ namespace Huenicorn
 
   void SetupBackend::_spawnBrowser()
   {
-    while (m_service.is_down()){
+    while (!running()){
       std::this_thread::sleep_for(100ms);
     }
-    
+
     std::stringstream serviceUrlStream;
-    serviceUrlStream << "http://127.0.0.1:" << m_settings->get_port();
+    serviceUrlStream << "http://127.0.0.1:" << m_app.port();
     std::string serviceURL = serviceUrlStream.str();
     Logger::log("Setup WebUI is ready and available at " + serviceURL);
 
@@ -108,40 +86,36 @@ namespace Huenicorn
   }
 
 
-  void SetupBackend::_getVersion(const SharedSession& session) const
+  void SetupBackend::_getVersion(crow::response& res) const
   {
     nlohmann::json jsonResponse = {
       {"version", m_huenicornCore->version()},
     };
 
     std::string response = jsonResponse.dump();
-
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 
 
-  void SetupBackend::_finish(const SharedSession& session)
+  void SetupBackend::_finish(crow::response& res)
   {
     std::string response = "{}";
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
 
     stop();
   }
 
 
-  void SetupBackend::_abort(const SharedSession& session)
+  void SetupBackend::_abort(crow::response& res)
   {
     std::string response = "{}";
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
 
     m_aborted = true;
 
@@ -149,81 +123,64 @@ namespace Huenicorn
   }
 
 
-  void SetupBackend::_autoDetectBridge(const SharedSession& session)
+  void SetupBackend::_autodetectBridge(crow::response& res)
   {
-    nlohmann::json jsonResponse = m_huenicornCore->autoDetectedBridge();
+    nlohmann::json jsonResponse = m_huenicornCore->autodetectedBridge();
     std::string response = jsonResponse.dump();
-
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 
-  
-  void SetupBackend::_configFilePath(const SharedSession& session)
+
+  void SetupBackend::_configFilePath(crow::response& res)
   {
     nlohmann::json jsonResponse = {{"configFilePath", m_huenicornCore->configFilePath()}};
     std::string response = jsonResponse.dump();
-
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 
 
-  void SetupBackend::_validateBridgeAddress(const SharedSession& session)
+  void SetupBackend::_validateBridgeAddress(const crow::request& req, crow::response& res)
   {
-    const auto request = session->get_request();
-    int contentLength = request->get_header("Content-Length", 0);
+    const std::string& data = req.body;
+    nlohmann::json jsonBridgeAddressData = nlohmann::json::parse(data);
 
-    session->fetch(contentLength, [this](const SharedSession& session, const restbed::Bytes& body){
-      std::string data(reinterpret_cast<const char*>(body.data()), body.size());
-      nlohmann::json jsonBridgeAddressData = nlohmann::json::parse(data);
+    std::string bridgeAddress = jsonBridgeAddressData.at("bridgeAddress");
 
-      std::string bridgeAddress = jsonBridgeAddressData.at("bridgeAddress");
+    nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateBridgeAddress(bridgeAddress)}};
 
-      nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateBridgeAddress(bridgeAddress)}};
-
-      std::string response = jsonResponse.dump();
-      session->close(restbed::OK, response, {
-        {"Content-Length", std::to_string(response.size())},
-        {"Content-Type", "application/json"}
-      });
-    });
+    std::string response = jsonResponse.dump();
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 
 
-  void SetupBackend::_validateCredentials(const SharedSession& session)
+  void SetupBackend::_validateCredentials(const crow::request& req, crow::response& res)
   {
-    const auto request = session->get_request();
-    int contentLength = request->get_header("Content-Length", 0);
+    const std::string& data = req.body;
+    nlohmann::json jsonCredentials = nlohmann::json::parse(data);
 
-    session->fetch(contentLength, [this](const SharedSession& session, const restbed::Bytes& body){
-      std::string data(reinterpret_cast<const char*>(body.data()), body.size());
-      nlohmann::json jsonCredentials = nlohmann::json::parse(data);
+    Credentials credentials(jsonCredentials.at("username"), jsonCredentials.at("clientkey"));
 
-      Credentials credentials(jsonCredentials.at("username"), jsonCredentials.at("clientkey"));
+    nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateCredentials(credentials)}};
 
-      nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateCredentials(credentials)}};
-
-      std::string response = jsonResponse.dump();
-      session->close(restbed::OK, response, {
-        {"Content-Length", std::to_string(response.size())},
-        {"Content-Type", "application/json"}
-      });
-    });
+    std::string response = jsonResponse.dump();
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 
 
-  void SetupBackend::_registerNewUser(const SharedSession& session)
+  void SetupBackend::_registerNewUser(crow::response& res)
   {
     nlohmann::json jsonResponse = m_huenicornCore->registerNewUser();
     std::string response = jsonResponse.dump();
-    session->close(restbed::OK, response, {
-      {"Content-Length", std::to_string(response.size())},
-      {"Content-Type", "application/json"}
-    });
+    res.set_header("Content-Type", "application/json");
+    res.write(response);
+    res.end();
   }
 }

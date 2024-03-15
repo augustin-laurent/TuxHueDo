@@ -108,7 +108,7 @@ namespace Huenicorn
   }
 
 
-  nlohmann::json HuenicornCore::autoDetectedBridge() const
+  nlohmann::json HuenicornCore::autodetectedBridge() const
   {
     std::string bridgeAddress;
     try{
@@ -554,7 +554,7 @@ namespace Huenicorn
         float percentage = lastExcess.rate * 100;
         std::ostringstream warningMessage;
         warningMessage << "Scheduled interval has been exceeded of ";
-        warningMessage << lastExcess.extra;
+        warningMessage << lastExcess.extra.count();
         warningMessage << " (";
         warningMessage << percentage;
         warningMessage << "%).\n";

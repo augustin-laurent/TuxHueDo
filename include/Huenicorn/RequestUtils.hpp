@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include <nlohmann/json.hpp>
+#include <curl/curl.h>
 
 
 namespace Huenicorn
@@ -11,8 +13,21 @@ namespace Huenicorn
    * @brief Provides an abstraction around HTTP requests and returns JSON data structs
    * 
    */
-  namespace RequestUtils
+  class RequestUtils
   {
+    class CurlDeleter
+    {
+    public:
+      void operator()(CURL* curl) const
+      {
+        curl_easy_cleanup(curl);
+      }
+    };
+
+
+    using UniqueCurlHandle = std::unique_ptr<CURL, CurlDeleter>;
+
+  public:
     using Headers = std::multimap<std::string, std::string>;
 
     /**
@@ -24,6 +39,12 @@ namespace Huenicorn
      * @param headers HTTP request headers
      * @return nlohmann::json JSON response
      */
-    nlohmann::json sendRequest(const std::string& url, const std::string& method, const std::string& body = "", const Headers& headers = {});
-  }
+    static nlohmann::json sendRequest(const std::string& url, const std::string& method, const std::string& body = "", const Headers& headers = {});
+
+
+  private:
+    static void _ensureInitialisation();
+
+    static UniqueCurlHandle s_handle;
+  };
 }

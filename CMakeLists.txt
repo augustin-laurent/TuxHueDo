@@ -22,9 +22,8 @@ endif()
 find_package(PkgConfig REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS imgproc)
 find_package(CURL REQUIRED)
+find_package(Crow REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
-find_library(RESTBED_LIBS restbed REQUIRED)
-find_library(CURLPP_LIBS curlpp REQUIRED)
 find_library(MBEDTLS_LIBS mbedtls REQUIRED)
 find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
@@ -125,8 +124,6 @@ target_include_directories(${BINARY_NAME} PUBLIC
 target_link_libraries(${BINARY_NAME} PUBLIC
   ${OpenCV_LIBS}
   ${CURL_LIBRARIES}
-  ${CURLPP_LIBS}
-  ${RESTBED_LIBS}
   ${MBEDTLS_LIBS}
   ${MBEDTLS_X509}
   ${MBEDTLS_CRYPTO}

@@ -9,7 +9,6 @@ namespace Huenicorn
 {
   class HuenicornCore;
 
-
   /**
    * @brief REST service handling requests for Huenicorn initial setup
    * 
@@ -64,65 +63,66 @@ namespace Huenicorn
     /**
      * @brief Returns the version of the backend project
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getVersion(const SharedSession& session) const override;
+    virtual void _getVersion(crow::response& res) const override;
 
   private:
     /**
      * @brief Completes Huenicorn setup and stops setup backend server
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _finish(const SharedSession& session);
+    void _finish(crow::response& res);
 
 
     /**
      * @brief Aborts Huenicorn setup and stops setup backend server
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _abort(const SharedSession& session);
+    void _abort(crow::response& res);
 
 
     /**
      * @brief Handles call for Hue bridge auto-detection
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _autoDetectBridge(const SharedSession& session);
+    void _autodetectBridge(crow::response& res);
 
 
     /**
      * @brief Returns the path to the config file
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _configFilePath(const SharedSession& session);
+    void _configFilePath(crow::response& res);
 
 
     /**
      * @brief Handles a requests for a Hue bridge address validation
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _validateBridgeAddress(const SharedSession& session);
+    void _validateBridgeAddress(const crow::request& req, crow::response& res);
 
 
     /**
      * @brief Handles a requests for Hue bridge credentials validation
      * 
-     * @param session 
+     * @param req Pending HTTP request
+     * @param res Pending HTTP response
      */
-    void _validateCredentials(const SharedSession& session);
+    void _validateCredentials(const crow::request& req, crow::response& res);
 
 
     /**
      * @brief Handles a request for a new Hue bridge user registration
      * 
-     * @param session 
+     * @param res Pending HTTP response
      */
-    void _registerNewUser(const SharedSession& session);
+    void _registerNewUser(crow::response& res);
 
 
     // Attributes

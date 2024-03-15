@@ -155,7 +155,7 @@ namespace Huenicorn
      * 
      * @return nlohmann::json Object containing Hue bridge address and request status
      */
-    nlohmann::json autoDetectedBridge() const;
+    nlohmann::json autodetectedBridge() const;
 
 
     /**

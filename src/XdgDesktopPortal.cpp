@@ -272,6 +272,7 @@ namespace Huenicorn
 
       g_autoptr(GError) error = NULL;
       g_autoptr(GVariant) result = g_dbus_proxy_call_finish(G_DBUS_PROXY(source), res, &error);
+      (void)result;
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
           Logger::error("error selecting screencast source: " + std::string(error->message));
@@ -331,6 +332,7 @@ namespace Huenicorn
 
       g_autoptr(GError) error = NULL;
       g_autoptr(GVariant) result = g_dbus_proxy_call_finish(G_DBUS_PROXY(source), res, &error);
+      (void)result;
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
           throw std::runtime_error("error selecting screencast source: " + std::string(error->message));
@@ -404,6 +406,7 @@ namespace Huenicorn
 
       g_autoptr(GError) error = NULL;
       g_autoptr(GVariant) result = g_dbus_proxy_call_finish(G_DBUS_PROXY(source), res, &error);
+      (void)result;
 
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){

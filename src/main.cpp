@@ -4,23 +4,15 @@
 #include <Huenicorn/Logger.hpp>
 
 #include <csignal>
+#include <memory>
 
 #include <pwd.h>
 
 #define xstr(s) preprocess_str(s)
 #define preprocess_str(s) #s
-static constexpr std::string Version = xstr(PROJECT_VERSION);
+static const char* CVersion = xstr(PROJECT_VERSION);
+static const std::string Version = std::string(CVersion);
 
-
-std::filesystem::path getConfigRoot()
-{
-  const char* homeDir;
-  if((homeDir = getenv("HOME")) == NULL){
-    homeDir = getpwuid(getuid())->pw_dir;
-  }
-
-  return std::filesystem::path(homeDir) / ".config/huenicorn";
-}
 
 
 /**
@@ -32,7 +24,7 @@ class Application
 public:
   void start()
   {
-    m_core = make_unique<Huenicorn::HuenicornCore>(Version, getConfigRoot());
+    m_core = std::make_unique<Huenicorn::HuenicornCore>(Version, _getConfigRoot());
     m_applicationThread.emplace([&](){
       m_core->start();
     });
@@ -52,7 +44,19 @@ public:
     m_core->stop();
   }
 
+
 private:
+  std::filesystem::path _getConfigRoot()
+  {
+    const char* homeDir;
+    if((homeDir = getenv("HOME")) == NULL){
+      homeDir = getpwuid(getuid())->pw_dir;
+    }
+
+    return std::filesystem::path(homeDir) / ".config/huenicorn";
+  }
+
+
   std::unique_ptr<Huenicorn::HuenicornCore> m_core;
   std::optional<std::thread> m_applicationThread;
 };

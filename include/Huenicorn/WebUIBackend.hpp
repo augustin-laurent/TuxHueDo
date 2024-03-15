@@ -9,7 +9,6 @@ namespace Huenicorn
 {
   class HuenicornCore;
 
-
   /**
    * @brief REST service handling requests for light management
    * 
@@ -17,7 +16,6 @@ namespace Huenicorn
   class WebUIBackend : public IRestServer
   {
     // Type definitions
-    using SharedSession = std::shared_ptr<restbed::Session>;
 
   public:
     // Constructor
@@ -42,138 +40,130 @@ namespace Huenicorn
     /**
      * @brief Returns the version of the backend project
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getVersion(const SharedSession& session) const override;
+    virtual void _getVersion(crow::response& res) const override;
 
 
   private:
     /**
      * @brief Handler to check the availability of the webUI
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getWebUIStatus(const SharedSession& session) const;
+    void _getWebUIStatus(crow::response& res) const;
 
 
     /**
      * @brief Handler to get available entertainment configurations
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getEntertainmentConfigurations(const SharedSession& session) const;
+    void _getEntertainmentConfigurations(crow::response& res) const;
 
 
     /**
      * @brief Handler to get channel data
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getChannel(const SharedSession& session) const;
+    void _getChannel(crow::response& res, uint8_t channelId) const;
 
 
     /**
      * @brief Handlerto get the channels data
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getChannels(const SharedSession& session) const;
-
-
-    /**
-     * @brief Handler to get Channels members
-     * 
-     * @param session Pending HTTP connection
-     */
-    void _getChannelsMembers(const SharedSession& session) const;
+    void _getChannels(crow::response& res) const;
 
 
     /**
      * @brief Handler to get the display informations
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getDisplayInfo(const SharedSession& session) const;
+    void _getDisplayInfo(crow::response& res) const;
 
 
     /**
      * @brief Handler to get the interpolation informations
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _getInterpolationInfo(const SharedSession& session) const;
+    void _getInterpolationInfo(crow::response& res) const;
 
 
     /**
      * @brief Handler to set the current entertainment configuration
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setEntertainmentConfiguration(const SharedSession& session) const;
+    void _setEntertainmentConfiguration(const crow::request& req, crow::response& res) const;
 
 
     /**
      * @brief Handler to set the UV coordinates for a given channel
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setChannelUV(const SharedSession& session) const;
+    void _setChannelUV(const crow::request& req, crow::response& res, uint8_t channelId) const;
 
 
     /**
      * @brief Handler to set the gamma factor for a given channel
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setChannelGammaFactor(const SharedSession& session) const;
+    void _setChannelGammaFactor(const crow::request& req, crow::response& res, uint8_t channelId) const;
 
 
     /**
      * @brief Handler to set the image subsample width
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setSubsampleWidth(const SharedSession& session) const;
+    void _setSubsampleWidth(const crow::request& req, crow::response& res) const;
 
 
     /**
      * @brief Handler to set the streaming refresh rate
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setRefreshRate(const SharedSession& session) const;
+    void _setRefreshRate(const crow::request& req, crow::response& res) const;
 
 
     /**
      * @brief Handler to set the interpolation type
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setInterpolation(const SharedSession& session) const;
+    void _setInterpolation(const crow::request& req, crow::response& res) const;
 
 
     /**
      * @brief Handler to set the channel streaming state
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _setChannelActivity(const SharedSession& session) const;
+    void _setChannelActivity(const crow::request& req, crow::response& res, uint8_t channelId) const;
 
 
     /**
      * @brief Handler to save the user profile
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _saveProfile(const SharedSession& session) const;
+    void _saveProfile(crow::response& res) const;
 
 
     /**
      * @brief Handler to stop Huenicorn
      * 
-     * @param session Pending HTTP connection
+     * @param res Pending HTTP response
      */
-    void _stop(const SharedSession& session) const;
+    void _stop(crow::response& res) const;
 
 
     // Attributes

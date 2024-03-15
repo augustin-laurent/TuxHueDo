@@ -16,12 +16,13 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.5 is available.
+Huenicorn 1.0.6 is available.
 
 ### This revision brings:
 
-* Simpler color computation
-* Choice between subsampling interpolations in Web UI's advanced settings
+* Better code compatibility for Clang compiler
+* Remove CurlPP dependency
+* Replace web backend with CrowCPP instead of Restbed
 
 ## Getting Started
 
@@ -36,11 +37,11 @@ Huenicorn 1.0.5 is available.
 
 * [X.Org](https://xorg.freedesktop.org) or [Wayland](https://wayland.freedesktop.org)
 * [OpenCV](https://github.com/opencv/opencv)
-* [Restbed](https://github.com/Corvusoft/restbed)
+* [Crow](https://crowcpp.org/master)
 * [Mbed-TLS](https://github.com/Mbed-TLS/mbedtls)
 * [GLM](https://github.com/g-truc/glm)
 * [nlohmann-json](https://github.com/nlohmann/json)
-* [CurlPP](https://github.com/jpbarrette/curlpp)
+* [Curl](https://curl.se)
 
 
 #### Dependencies intallation
@@ -54,12 +55,14 @@ sudo pacman -S xorg-server
 # And/or
 sudo pacman -S wayland glib2 pipewire
 
-# Mandatory
-sudo pacman -S opencv mbedtls glm nlohmann-json
-# Some more dependencies from AUR
-yay -S restbed libcurlpp
+  # Mandatory
+  sudo pacman -S curl opencv mbedtls glm nlohmann-json
+
+  # Some more dependencies from AUR
+  yay -S crow
 ```
 </details>
+
 
 <details>
 
@@ -67,17 +70,13 @@ yay -S restbed libcurlpp
 
 ```bash
 # Install dependencies
-sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel curl-devel curlpp-devel mbedtls-devel libXrandr-devel glm-devel
+sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel asio-devel curl-devel mbedtls-devel libXrandr-devel glm-devel
 
-# Clone, build, and install restbed (not provided in Fedora repos)
-git clone https://github.com/Corvusoft/restbed
-cd restbed
-mkdir build && cd build
-cmake -DBUILD_SSL=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=/usr ..
-make && sudo make install
-
-# Fix resetbed's shared object location
-sudo cp ../distribution/library/librestbed.* /usr/lib
+# Crow
+# Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
+# Extract the archive and copy its content to the target directories:
+sudo cp -r include/ /usr/local/include
+sudo cp -r lib/ /usr/local/lib
 ```
 </details>
 
@@ -89,10 +88,17 @@ sudo cp ../distribution/library/librestbed.* /usr/lib
 These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to build and run Huenicorn:  
 
 ```bash
-sudo zypper install opencv-devel libopencv408 python311-jsonschema glm-devel nlohmann_json-devel
+sudo zypper install opencv-devel libopencv408 python311-jsonschema asio-devel glm-devel nlohmann_json-devel
+
+# Crow
+# Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
+# Extract the archive and copy its content to the target directories:
+sudo cp -r include/ /usr/local/include
+sudo cp -r lib/ /usr/local/lib
+
 ```
 
-Additionally you have to build the curlpp, Restbed and Mbed-TLS from source from the links above.   
+Additionally you have to build Mbed-TLS from source from the links above.   
 Follow the build instructions in their respective README files and copy them to the appropriate place, as some of them don't do that automatically (usually /usr/local/lib64/ for libraries (check LD_LIBRARY_PATH) or /usr/local/include/ for includes)
 
 </details>
@@ -115,15 +121,9 @@ sudo apt-get install libglib2.0-dev libpipewire-0.3-dev
 # Mandatory libraries
 sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev
 
-# Restbed has to be compiled from the source repository because the package version is outdated:
+# Crow .deb installer can be downloaded from deb on their repository: https://github.com/CrowCpp/Crow/releases/tag/v1.0+5
+sudo dpkg -i crow-v1.0+5.deb
 
-git clone --recursive https://github.com/corvusoft/restbed.git
-cd restbed
-mkdir build && cd build
-cmake -DBUILD_SSL=OFF -DBUILD_TESTS=OFF ..
-sudo make install
-sudo cp ../distribution/library/librestbed.* /usr/lib
-sudo cp -r ../distribution/include/* /usr/include
 
 # Make sure to use gcc/g++ v12
 sudo apt install gcc-12 g++-12
@@ -244,6 +244,8 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
+* 1.0.6 (Latest)
+  * Library replacements and better compiler support
 * 1.0.5
   * Add choice between subsampling interpolations in Web UI's advanced settings
 * 1.0.4
