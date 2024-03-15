@@ -90,6 +90,7 @@ namespace Huenicorn
 
       m_app.bindaddr(boundBackendIP);
       m_app.port(port);
+      m_app.signal_clear();
 
       m_running = true;
 
