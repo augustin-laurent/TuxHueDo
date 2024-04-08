@@ -37,7 +37,10 @@ namespace Huenicorn
     }
 
     // TODO : check if a thread for this is really necessary
+    m_pwData.screenDataReadyPromise.emplace();
+    auto configDataReadyFuture = m_pwData.screenDataReadyPromise.value().get_future();
     m_pipewireThread.emplace(_pipewireThread, &m_capture, &m_pwData);
+    configDataReadyFuture.wait();
   }
 
 
@@ -167,7 +170,9 @@ namespace Huenicorn
     Logger::debug(ss.str());
     */
 
-    pw->ready.set_value(true);
+    if(pw->screenDataReadyPromise.has_value()){
+      pw->screenDataReadyPromise.value().set_value(true);
+    }
   }
 
 

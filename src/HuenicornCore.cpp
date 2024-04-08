@@ -205,7 +205,6 @@ namespace Huenicorn
 
   void HuenicornCore::start()
   {
-
     if(!m_config.initialSetupOk()){
       if(!_runInitialSetup()){
         return;
@@ -217,8 +216,6 @@ namespace Huenicorn
       return;
     }
 
-    _initWebUI();
-
     if(!_initSettings()){
       Logger::error("Could not load suitable entertainment configuration.");
       return;
@@ -226,6 +223,8 @@ namespace Huenicorn
       // TODO : Add tool to create entertainment configurations inside Huenicorn
       // so the official application would no longer be a requirement
     }
+
+    _initWebUI();
 
     _startStreamingLoop();
   }

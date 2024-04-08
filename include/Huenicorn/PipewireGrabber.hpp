@@ -44,7 +44,7 @@ namespace Huenicorn
       pw_stream* stream;
       spa_video_info format;
       SafeDoubleBuffer frameDoubleBuffer;
-      std::promise<bool> ready;
+      std::optional<std::promise<bool>> screenDataReadyPromise;
       Config* config;
     };
 
