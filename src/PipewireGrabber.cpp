@@ -41,6 +41,8 @@ namespace Huenicorn
     auto configDataReadyFuture = m_pwData.screenDataReadyPromise.value().get_future();
     m_pipewireThread.emplace(_pipewireThread, &m_capture, &m_pwData);
     configDataReadyFuture.wait();
+
+    m_pwData.screenDataReadyPromise = std::nullopt;
   }
 
 
