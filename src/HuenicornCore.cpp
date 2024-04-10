@@ -226,6 +226,14 @@ namespace Huenicorn
 
     _initWebUI();
 
+
+    // Spawn UI if no profiles are found
+    auto optJsonProfile = _getProfile();
+    if(!optJsonProfile.has_value() && !m_openedSetup){
+      std::thread spawnBrowser([this](){_spawnBrowser();});
+      spawnBrowser.detach();
+    }
+
     _startStreamingLoop();
   }
 
@@ -373,11 +381,6 @@ namespace Huenicorn
     }
 
     _enableEntertainmentConfiguration(entertainmentConfigurationId);
-
-    if(!optJsonProfile.has_value() && !m_openedSetup){
-      std::thread spawnBrowser([this](){_spawnBrowser();});
-      spawnBrowser.detach();
-    }
 
     return true;
   }

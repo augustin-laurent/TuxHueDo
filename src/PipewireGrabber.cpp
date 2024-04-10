@@ -23,25 +23,22 @@ namespace Huenicorn
   IGrabber(config)
   {
     m_pwData.config = config;
-    auto readyFuture = m_capture.fdReadyPromise.get_future();
 
+    std::promise<bool> fdReadyPromise;
+    auto fdReadyFuture = fdReadyPromise.get_future();
+    m_capture.fdReadyPromise = std::move(fdReadyPromise);
     m_xdgThread.emplace(_initCapture, &m_capture);
+    fdReadyFuture.wait();
 
-    readyFuture.wait();
-
-    if(!readyFuture.get()){
+    if(!fdReadyFuture.get()){
       m_capture.updateXdgContext = false;
-      m_xdgThread.value().join();
-      m_xdgThread.reset();
-      throw std::runtime_error("Failed to select source");
+      throw std::runtime_error("Failed to get monitor file descriptor");
     }
 
-    // TODO : check if a thread for this is really necessary
     m_pwData.screenDataReadyPromise.emplace();
     auto configDataReadyFuture = m_pwData.screenDataReadyPromise.value().get_future();
     m_pipewireThread.emplace(_pipewireThread, &m_capture, &m_pwData);
     configDataReadyFuture.wait();
-
     m_pwData.screenDataReadyPromise = std::nullopt;
   }
 
@@ -194,8 +191,9 @@ namespace Huenicorn
 
   void PipewireGrabber::_pipewireThread(XdgDesktopPortal::Capture* capture, PipewireData* pw)
   {
-    pw_init(NULL, NULL);
+    capture->updateXdgContext = false;
 
+    pw_init(NULL, NULL);
     pw_core_events coreEvents;
     coreEvents.version = PW_VERSION_CORE_EVENTS;
     coreEvents.info = _onCoreInfoCallback;
@@ -300,15 +298,23 @@ namespace Huenicorn
       pw_stream_disconnect(m_pwData.stream);
     }
 
-    g_clear_pointer(&m_pwData.stream, pw_stream_destroy);
+    if(m_pwData.stream){
+      pw_stream_destroy(m_pwData.stream);
+    }
+
     pw_thread_loop_unlock(m_pwData.loop);
 
     if(m_pwData.loop){
       pw_thread_loop_stop(m_pwData.loop);
     }
 
-    g_clear_pointer(&m_pwData.context, pw_context_destroy);
-    g_clear_pointer(&m_pwData.loop, pw_thread_loop_destroy);
+    if(m_pwData.context){
+      pw_context_destroy(m_pwData.context);
+    }
+
+    if(m_pwData.loop){
+      pw_thread_loop_destroy(m_pwData.loop);
+    }
 
     if(m_capture.pwFd > 0){
       close(m_capture.pwFd);
