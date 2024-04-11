@@ -31,7 +31,7 @@ namespace Huenicorn
     fdReadyFuture.wait();
 
     if(!fdReadyFuture.get()){
-      m_capture.updateXdgContext = false;
+      _stop();
       throw std::runtime_error("Failed to get monitor file descriptor");
     }
 
@@ -39,6 +39,7 @@ namespace Huenicorn
     auto configDataReadyFuture = m_pwData.screenDataReadyPromise.value().get_future();
     m_pipewireThread.emplace(_pipewireThread, &m_capture, &m_pwData);
     configDataReadyFuture.wait();
+
     m_pwData.screenDataReadyPromise = std::nullopt;
   }
 
@@ -293,6 +294,10 @@ namespace Huenicorn
 
   void PipewireGrabber::_teardownPipewire()
   {
+    if(!m_pwData.loop){
+      return;
+    }
+
     pw_thread_loop_lock(m_pwData.loop);
     if (m_pwData.stream){
       pw_stream_disconnect(m_pwData.stream);
@@ -331,18 +336,17 @@ namespace Huenicorn
     _teardownPipewire();
 
     // Stop XdgPortal
+    m_capture.updateXdgContext = false; // Making sure
     XdgDesktopPortal::screencastPortalCaptureDestroy(&m_capture);
+    if(m_xdgThread.has_value()){
+      m_xdgThread.value().join();
+      m_xdgThread.reset();
+    }
 
     // Waiting for thread to finish
     if(m_pipewireThread.has_value()){
       m_pipewireThread.value().join();
       m_pipewireThread.reset();
-    }
-
-    if(m_xdgThread.has_value()){
-      m_capture.updateXdgContext = false; // Making sure
-      m_xdgThread.value().join();
-      m_xdgThread.reset();
     }
   }
 }
