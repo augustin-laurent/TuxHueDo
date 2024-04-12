@@ -65,7 +65,7 @@ namespace Huenicorn
   void PipewireGrabber::grabFrameSubsample(cv::Mat& cvImage)
   {
     auto lock = std::lock_guard(m_pwData.frameDoubleBuffer.mutex);
-    cvImage = std::move(m_pwData.frameDoubleBuffer.frame.at(0));
+    cvImage = m_pwData.frameDoubleBuffer.frame.at(0);
   }
 
 
