@@ -16,13 +16,14 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.6 is available.
+Huenicorn 1.0.7 is available.
 
 ### This revision brings:
-
-* Better code compatibility for Clang compiler
-* Remove CurlPP dependency
-* Replace web backend with CrowCPP instead of Restbed
+* Bug fixes for Wayland session
+  * Config file now features valid data after initial setup
+  * Grabber no longer crashes in certain conditions after selecting a screen
+  * Cancellation on screen selection now exits Huenicorn gracefully
+  * Connection to the bridge is no longer interrupted on still image
 
 ## Getting Started
 
@@ -244,7 +245,9 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
-* 1.0.6 (Latest)
+* 1.0.7 (Latest)
+  * Bug fixes for Wayland sessions
+* 1.0.6
   * Library replacements and better compiler support
 * 1.0.5
   * Add choice between subsampling interpolations in Web UI's advanced settings
