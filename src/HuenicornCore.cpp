@@ -360,7 +360,29 @@ namespace Huenicorn
     }
 
     if(m_config.subsampleWidth() == 0){
-      m_config.setSubsampleWidth(m_grabber->subsampleResolutionCandidates().back().x);
+      auto displayResolution = m_grabber->displayResolution();
+      float percentThreshold = 1.0;
+      auto subsampleCandidates = m_grabber->subsampleResolutionCandidates();
+
+      unsigned bestSubsampleWidth = subsampleCandidates.back().x;
+      for(int i = subsampleCandidates.size(); i--;){
+        unsigned candidate = subsampleCandidates.at(i).x;
+
+        if((static_cast<float>(candidate) / displayResolution.x) * 100 >= percentThreshold){
+          bestSubsampleWidth = candidate;
+          break;
+        }
+      }
+
+      m_config.setSubsampleWidth(bestSubsampleWidth);
+    }
+
+    const float warningThreshold = 50.0;
+
+    float ratio = static_cast<float>(m_config.subsampleWidth()) / m_grabber->displayResolution().x;
+
+    if(ratio >= warningThreshold / 100){
+      Logger::warn("Subsample width is >= ", warningThreshold, "% of the display resolution. Color computation might be intensive.");
     }
 
     Logger::log("Configuration is ready. Feel free to modify it manually by editing \"" + m_config.configFilePath().string() + "\"");

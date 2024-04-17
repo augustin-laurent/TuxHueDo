@@ -88,7 +88,9 @@ namespace Huenicorn
     {
       auto resolution = displayResolution();
       auto wDivisors = _divisors(resolution.x);
-      auto validDivisors = _selectValidDivisors(resolution.x, resolution.y, wDivisors);
+      auto hDivisors = _divisors(resolution.y);
+
+      auto validDivisors = _selectValidDivisors(wDivisors, hDivisors);
 
       Resolutions subsampleResolutionCandidates;
 
@@ -112,7 +114,7 @@ namespace Huenicorn
      */
     inline static Divisors _divisors(int number)
     {
-      std::vector<int>divisors;
+      Divisors divisors;
       for(int i = 1; i < number / 2; i++){
         if(number % i == 0){
           divisors.push_back(i);
@@ -128,18 +130,16 @@ namespace Huenicorn
     /**
      * @brief Outputs a list of integer divisors for given width and height out of divisor list
      * 
-     * @param width Width constrain
-     * @param height Height constain
-     * @param candidateDivisors Divisors to filter
-     * @return Divisors 
+     * @param widthDivisors List of width divisors
+     * @param heightDivisors List of height divisors
+     * @return Divisors
      */
-    inline static Divisors _selectValidDivisors(int width, int height, const Divisors& candidateDivisors)
+    inline static Divisors _selectValidDivisors(const Divisors& widthDivisors, const Divisors& heightDivisors)
     {
-      Divisors validDivisors;
+      Divisors validDivisors(std::max(widthDivisors.size(), heightDivisors.size()));
+      auto validDivisorsIt = std::set_intersection(widthDivisors.begin(), widthDivisors.end(), heightDivisors.begin(), heightDivisors.end(), validDivisors.begin());
 
-      std::copy_if(candidateDivisors.begin(), candidateDivisors.end(), std::back_inserter(validDivisors), [&](int candidateDivisor){
-        return (height % (width / candidateDivisor)) != 0;
-      });
+      validDivisors.resize(validDivisorsIt - validDivisors.begin());
 
       return validDivisors;
     }
