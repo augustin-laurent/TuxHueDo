@@ -1,16 +1,13 @@
 #pragma once
 
-#include <string>
+#include <iostream>
+#include <sstream>
 
 namespace Huenicorn
 {
-  // Forward declaration for shorthand
-  namespace Logger{enum class LogLevel;};
-  using Logger::LogLevel;
-
   namespace Logger
   {
-    enum class LogLevel 
+    enum class LogLevel
     {
       Message,
       Warning,
@@ -18,14 +15,80 @@ namespace Huenicorn
       Debug,
     };
 
-    void log(LogLevel logLevel, const std::string& message);
+    void logHelper(std::ostringstream&);
 
-    void log(const std::string& logMessage);
+    template<typename T, typename... Args>
+    void logHelper(std::ostringstream& oss, T&& t, Args&&... args)
+    {
+      oss << std::forward<T>(t);
+      logHelper(oss, std::forward<Args>(args)...);
+    }
 
-    void warn(const std::string& warningMessage);
 
-    void error(const std::string& errorMessage);
+    template<typename T>
+    void logHelper(std::ostringstream& oss, T&& t)
+    {
+      oss << std::forward<T>(t);
+    }
 
-    void debug(const std::string& debugMessage);
+
+    template<typename... Args>
+    void log(LogLevel logLevel, Args&&... args)
+    {
+      std::ostringstream oss;
+      logHelper(oss, std::forward<Args>(args)...);
+
+      switch(logLevel)
+      {
+        case LogLevel::Message:
+          std::cout << oss.str() << "\n";
+          break;
+
+        case LogLevel::Warning:
+          std::cout << "[Warning] : " << oss.str() << "\n";
+          break;
+
+        case LogLevel::Error:
+          std::cerr << "[Error] : " << oss.str() << "\n";
+          break;
+
+  #ifndef NDEBUG
+        case LogLevel::Debug:
+          std::cout << "[Debug] : " << oss.str() << "\n";
+          break;
+  #endif // NDEBUG
+
+        default:
+          break;
+      }
+    }
+
+
+    template<typename... Args>
+    void log(Args&&... args)
+    {
+      log(LogLevel::Message, std::forward<Args>(args)...);
+    }
+
+
+    template<typename... Args>
+    void warn(Args&&... args)
+    {
+      log(LogLevel::Warning, std::forward<Args>(args)...);
+    }
+
+
+    template<typename... Args>
+    void error(Args&&... args)
+    {
+      log(LogLevel::Error, std::forward<Args>(args)...);
+    }
+
+
+    template<typename... Args>
+    void debug(Args&&... args)
+    {
+      log(LogLevel::Debug, std::forward<Args>(args)...);
+    }
   }
 }
