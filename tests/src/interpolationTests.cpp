@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
   std::filesystem::path samplesOutputDirPath = samplesDirPath / "Outputs";
 
   if(!std::filesystem::exists(samplesDirPath) || !std::filesystem::is_directory(samplesDirPath)){
-    Huenicorn::Logger::error("Invalid folder " + std::string(samplesInputDirPath));
+    Huenicorn::Logger::error("Invalid folder ", samplesInputDirPath);
     return 0;
   }
 

@@ -206,7 +206,7 @@ namespace Huenicorn
         webFileFullPath = m_webroot / webFileName;
       }
 
-      std::string extension = webFileName.extension().string();
+      std::string extension = webFileName.extension();
       std::string contentType = "text/plain";
 
       if(m_contentTypes.find(extension) != m_contentTypes.end()){

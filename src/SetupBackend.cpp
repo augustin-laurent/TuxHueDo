@@ -78,7 +78,7 @@ namespace Huenicorn
     std::stringstream serviceUrlStream;
     serviceUrlStream << "http://127.0.0.1:" << m_app.port();
     std::string serviceURL = serviceUrlStream.str();
-    Logger::log("Setup WebUI is ready and available at " + serviceURL);
+    Logger::log("Setup WebUI is ready and available at ", serviceURL);
 
     if(system(std::string("xdg-open " + serviceURL).c_str()) != 0){
       Logger::error("Failed to open browser");

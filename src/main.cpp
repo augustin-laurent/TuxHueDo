@@ -76,7 +76,7 @@ void signalHandler(int signal)
 
 int main()
 {
-  Huenicorn::Logger::log("Starting Huenicorn version " + Version);
+  Huenicorn::Logger::log("Starting Huenicorn version ", Version);
 
   signal(SIGTERM, signalHandler);
   signal(SIGINT, signalHandler);

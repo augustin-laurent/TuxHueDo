@@ -385,7 +385,7 @@ namespace Huenicorn
       Logger::warn("Subsample width is >= ", warningThreshold, "% of the display resolution. Color computation might be intensive.");
     }
 
-    Logger::log("Configuration is ready. Feel free to modify it manually by editing \"" + m_config.configFilePath().string() + "\"");
+    Logger::log("Configuration is ready. Feel free to modify it manually by editing ", std::quoted(m_config.configFilePath()));
 
     const Credentials& credentials = m_config.credentials().value();
     const std::string& bridgeAddress =  m_config.bridgeAddress().value();
@@ -523,11 +523,11 @@ namespace Huenicorn
     while (!m_webUIService.server->running()){
       std::this_thread::sleep_for(100ms);
     }
-    
+
     std::stringstream serviceUrlStream;
     serviceUrlStream << "http://127.0.0.1:" << m_config.restServerPort();
     std::string serviceURL = serviceUrlStream.str();
-    Logger::log("Management WebUI is ready and available at " + serviceURL);
+    Logger::log("Management WebUI is ready and available at ", serviceURL);
 
     if(system(std::string("xdg-open " + serviceURL).c_str()) != 0){
       Logger::error("Failed to open browser");
@@ -576,13 +576,7 @@ namespace Huenicorn
       if(!m_tickSynchronizer->sync()){
         const auto& lastExcess = m_tickSynchronizer->lastExcess();
         float percentage = lastExcess.rate * 100;
-        std::ostringstream warningMessage;
-        warningMessage << "Scheduled interval has been exceeded of ";
-        warningMessage << lastExcess.extra.count();
-        warningMessage << " (";
-        warningMessage << percentage;
-        warningMessage << "%).\n";
-        Logger::warn(warningMessage.str() + "Please reduce refresh rate if this warning persists.");
+        Logger::warn("Scheduled interval has been exceeded of ", lastExcess.extra.count(), " (", percentage, "%).\n Please reduce refresh rate if this warning persists.");
       }
     }
 

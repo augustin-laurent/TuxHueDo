@@ -53,13 +53,13 @@ namespace Huenicorn
 
     if(entertainmentConfigurationId.empty()){
       m_currentEntertainmentConfiguration = m_entertainmentConfigurations.begin();
-      Logger::log("Fallback selection " + m_currentEntertainmentConfiguration->first);
+      Logger::log("Fallback selection ", m_currentEntertainmentConfiguration->first);
     }
     else{
       m_currentEntertainmentConfiguration = m_entertainmentConfigurations.find(entertainmentConfigurationId);
 
       if(m_currentEntertainmentConfiguration == m_entertainmentConfigurations.end()){
-        Logger::error("Invalid selection : " + entertainmentConfigurationId);
+        Logger::error("Invalid selection : ", entertainmentConfigurationId);
         return false;
       }
     }

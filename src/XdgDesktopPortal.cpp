@@ -35,7 +35,7 @@ namespace Huenicorn
         connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
 
         if(error){
-         Logger::warn("error retrieving D-Bus connection: " + std::string(error->message));
+         Logger::warn("error retrieving D-Bus connection: ", std::string(error->message));
          return;
         }
       }
@@ -97,7 +97,7 @@ namespace Huenicorn
         screencastProxy = g_dbus_proxy_new_sync(portalGetDbusConnection(), G_DBUS_PROXY_FLAGS_NONE, NULL, busName.c_str(), objectPath.c_str(), interfaceName.c_str(), NULL, &error);
 
         if(error){
-          Logger::warn("error retrieving D-Bus proxy: " + std::string(error->message));
+          Logger::warn("error retrieving D-Bus proxy: ", std::string(error->message));
           return;
         }
       }
@@ -198,7 +198,7 @@ namespace Huenicorn
 
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
-          Logger::error("[pipewire] error retrieving pipewire fd: " + std::string(error->message));
+          Logger::error("[pipewire] error retrieving pipewire fd: ", std::string(error->message));
         }
 
         return;
@@ -210,7 +210,7 @@ namespace Huenicorn
       int pwFd = g_unix_fd_list_get(fdList, fdIndex, &error);
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
-          Logger::error("[pipewire] error retrieving pipewire fd: " + std::string(error->message));
+          Logger::error("[pipewire] error retrieving pipewire fd: ", std::string(error->message));
         }
 
         return;
@@ -278,7 +278,7 @@ namespace Huenicorn
       (void)result;
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
-          Logger::error("error selecting screencast source: " + std::string(error->message));
+          Logger::error("error selecting screencast source: ", std::string(error->message));
           capture->fdReadyPromise.set_value(false);
         }
         return;
@@ -339,7 +339,7 @@ namespace Huenicorn
       (void)result;
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
-          Logger::error("error selecting screencast source: " + std::string(error->message));
+          Logger::error("error selecting screencast source: ", std::string(error->message));
         }
 
         return;
@@ -414,7 +414,7 @@ namespace Huenicorn
 
       if(error){
         if(!g_error_matches(error, G_IO_ERROR, G_IO_ERROR_CANCELLED)){
-          Logger::error("error creating screencast session: " + std::string(error->message));
+          Logger::error("error creating screencast session: ", std::string(error->message));
         }
 
         return;

@@ -75,7 +75,7 @@ namespace Huenicorn
     (void)info;
     //PipewireData* pw = static_cast<PipewireData*>(userData);
     //update_pw_versions(pw, info->version);
-    //Logger::debug("Pipewire version : " + std::string(info->version));
+    //Logger::debug("Pipewire version : ", std::string(info->version));
   }
 
 
