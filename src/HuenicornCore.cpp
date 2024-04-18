@@ -385,7 +385,7 @@ namespace Huenicorn
       Logger::warn("Subsample width is >= ", warningThreshold, "% of the display resolution. Color computation might be intensive.");
     }
 
-    Logger::log("Configuration is ready. Feel free to modify it manually by editing ", std::quoted(m_config.configFilePath()));
+    Logger::log("Configuration is ready. Feel free to modify it manually by editing ", std::quoted(m_config.configFilePath().string()));
 
     const Credentials& credentials = m_config.credentials().value();
     const std::string& bridgeAddress =  m_config.bridgeAddress().value();
