@@ -300,6 +300,9 @@ namespace Huenicorn
     }
 
     m_channels.at(channelId).setActive(active);
+
+    _updateStreamChannelsSize();
+
     return true;
   }
 
@@ -515,6 +518,7 @@ namespace Huenicorn
     }
 
     m_channels = std::move(channels);
+    _updateStreamChannelsSize();
   }
 
 
@@ -596,15 +600,19 @@ namespace Huenicorn
     }
 
     cv::Mat subframeImage;
-    ChannelStreams channelStreams;
 
     for(auto& [channelId, channel] : m_channels){
       if(channel.state() == Channel::State::Inactive){
         continue;
       }
 
+      auto& channelStream = m_channelStreams.at(channelId);
+
       if(channel.state() == Channel::State::PendingShutdown){
-        channelStreams.push_back({channelId, 0, 0, 0});
+        channelStream.id = channelId;
+        channelStream.r = 0;
+        channelStream.g = 0;
+        channelStream.b = 0;
         channel.acknowledgeShutdown();
       }
       else{
@@ -619,14 +627,17 @@ namespace Huenicorn
         glm::vec3 normalized = color.toNormalized();
         glm::vec3 correctedColor = glm::pow(normalized, glm::vec3(channel.gammaExponent()));
 
-        channelStreams.push_back({channelId, correctedColor.r, correctedColor.g, correctedColor.b});
+        channelStream.id = channelId;
+        channelStream.r = correctedColor.r;
+        channelStream.g = correctedColor.g;
+        channelStream.b = correctedColor.b;
       }
     }
 
     {
       std::lock_guard lock(m_streamerMutex);
       if(m_streamer.get()){
-        m_streamer->streamChannels(channelStreams);
+        m_streamer->streamChannels(m_channelStreams);
       }
     }
   }
@@ -635,5 +646,11 @@ namespace Huenicorn
   void HuenicornCore::_shutdown()
   {
     m_selector->disableStreaming();
+  }
+
+
+  void HuenicornCore::_updateStreamChannelsSize()
+  {
+    m_channelStreams.resize(m_channels.size());
   }
 }
