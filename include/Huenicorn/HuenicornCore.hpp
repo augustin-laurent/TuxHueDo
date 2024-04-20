@@ -360,10 +360,10 @@ namespace Huenicorn
 
 
     /**
-     * @brief Computes the channels colors and streams them
+     * @brief Computes the channels colors from grabbed frames and streams them to the bridge
      * 
      */
-    void _processFrame();
+    void _update();
 
 
     /**

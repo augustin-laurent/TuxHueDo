@@ -575,7 +575,7 @@ namespace Huenicorn
 
     m_keepLooping = true;
     while(m_keepLooping){
-      _processFrame();
+      _update();
 
       if(!m_tickSynchronizer->sync()){
         const auto& lastExcess = m_tickSynchronizer->lastExcess();
@@ -591,7 +591,7 @@ namespace Huenicorn
   }
 
 
-  void HuenicornCore::_processFrame()
+  void HuenicornCore::_update()
   {
     m_grabber->grabFrameSubsample(m_cvImage);
     if(!m_cvImage.data){
