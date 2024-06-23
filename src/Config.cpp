@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include <Huenicorn/JsonSerializer.hpp>
 #include <Huenicorn/Logger.hpp>
 
 
@@ -228,7 +227,7 @@ namespace Huenicorn
     }
 
     if(m_credentials.has_value()){
-      jsonOutConfig["credentials"] = JsonSerializer::serialize(m_credentials.value());
+      jsonOutConfig["credentials"] = nlohmann::json(m_credentials.value());
     }
 
     if(m_profileName.has_value()){

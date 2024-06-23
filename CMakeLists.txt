@@ -76,17 +76,19 @@ add_executable(${BINARY_NAME}
   src/Channel.cpp
   src/Config.cpp
   src/Credentials.cpp
+  src/Device.cpp
   src/DtlsClient.cpp
+  src/EntertainmentConfiguration.cpp
   src/EntertainmentConfigurationSelector.cpp
   src/HuenicornCore.cpp
   src/ImageProcessing.cpp
   src/Interpolation.cpp
-  src/JsonSerializer.cpp
   src/Logger.cpp
   src/Streamer.cpp
   src/RequestUtils.cpp
   src/SetupBackend.cpp
   src/TickSynchronizer.cpp
+  src/UV.cpp
   src/WebUIBackend.cpp
   include/Huenicorn/ApiTools.hpp
   include/Huenicorn/Channel.hpp
@@ -102,7 +104,6 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/ImageProcessing.hpp
   include/Huenicorn/Interpolation.hpp
   include/Huenicorn/IRestServer.hpp
-  include/Huenicorn/JsonSerializer.hpp
   include/Huenicorn/Logger.hpp
   include/Huenicorn/RequestUtils.hpp
   include/Huenicorn/SetupBackend.hpp

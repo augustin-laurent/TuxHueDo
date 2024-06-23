@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 
+#include <nlohmann/json.hpp>
 
 namespace Huenicorn
 {
@@ -18,4 +19,11 @@ namespace Huenicorn
   };
 
   using Devices = std::unordered_map<std::string, Device>;
+
+  // Deserialization
+  void from_json(const nlohmann::json& jsonDevice, Device& device);
+
+  // Serialization
+  void to_json(nlohmann::json& jsonDevice, const Device& device);
+  void to_json(nlohmann::json& jsonDevices, const std::vector<Device>& devices);
 }

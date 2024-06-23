@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json.hpp>
 
 namespace Huenicorn
 {
@@ -67,4 +68,8 @@ namespace Huenicorn
     std::string m_username;
     std::string m_clientkey;
   };
+
+
+  // Serialization
+  void to_json(nlohmann::json& json, const Credentials& credentials);
 }

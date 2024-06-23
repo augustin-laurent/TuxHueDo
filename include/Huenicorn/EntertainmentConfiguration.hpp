@@ -2,9 +2,10 @@
 
 #include <unordered_map>
 
+#include <nlohmann/json.hpp>
+
 #include <Huenicorn/Channel.hpp>
 #include <Huenicorn/Device.hpp>
-#include <Huenicorn/UV.hpp>
 
 
 namespace Huenicorn
@@ -20,61 +21,18 @@ namespace Huenicorn
    * @brief Wrapper around Hue Entertainment Configuration
    * 
    */
-  class EntertainmentConfiguration
+  struct EntertainmentConfiguration
   {
-  public:
-    // Constructor
-    /**
-     * @brief EntertainmentConfiguration constructor
-     * 
-     * @param name Name of the entertainment configuration
-     * @param devices List of devices managed by the entertainment configuration
-     * @param channels List of channels managed by the entertainment configuration
-     */
-    EntertainmentConfiguration(const std::string& name, const Devices& devices, const Channels& channels):
-    m_name(name),
-    m_devices(devices),
-    m_channels(channels)
-    {}
-
-
-    // Getters
-    /**
-     * @brief Returns the entertainment configuration name
-     * 
-     * @return const std::string&  entertainment configuration name
-     */
-    const std::string& name() const
-    {
-      return m_name;
-    }
-
-
-    /**
-     * @brief Returns entertainment configuration devices
-     * 
-     * @return const Devices& Entertainment configuration devices
-     */
-    const Devices& devices() const
-    {
-      return m_devices;
-    }
-
-
-    /**
-     * @brief Returns entertainment configuration channels
-     * 
-     * @return const Channels& Entertainment configuration channels
-     */
-    const Channels& channels() const
-    {
-      return m_channels;
-    }
-
-  private:
-    // Attributes
-    std::string m_name;
-    Devices m_devices;
-    Channels m_channels;
+    std::string name;
+    Devices devices;
+    Channels channels;
   };
+
+
+  // Deserialization
+  void from_json(const nlohmann::json& jsonEntConf, EntertainmentConfiguration& entConf);
+
+  // Serialization
+  void to_json(nlohmann::json& jsonEntConf, const EntertainmentConfiguration& entConf);
+  void to_json(nlohmann::json& jsonEntConfs, const EntertainmentConfigurations& entConfs);
 }

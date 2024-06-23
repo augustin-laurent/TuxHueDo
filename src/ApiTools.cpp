@@ -11,42 +11,41 @@ namespace Huenicorn
   {
     EntertainmentConfigurations loadEntertainmentConfigurations(const std::string& username, const std::string& bridgeAddress)
     {
-      EntertainmentConfigurations entertainmentConfigurations;
+      // I don't always abbreviate variable names
+      // but when I do, it's because I don't have a 32:9 monitor
+      // (If someones has such a display, please tell me about Huenicorn's performance)
+      EntertainmentConfigurations entConfs;
 
       RequestUtils::Headers headers = {{"hue-application-key", username}};
-      std::string entertainmentConfUrl = "https://" + bridgeAddress + "/clip/v2/resource/entertainment_configuration";
-      auto entertainmentConfigurationResponse = RequestUtils::sendRequest(entertainmentConfUrl, "GET", "", headers);
+      std::string entConfUrl = "https://" + bridgeAddress + "/clip/v2/resource/entertainment_configuration";
+      auto entConfResponse = RequestUtils::sendRequest(entConfUrl, "GET", "", headers);
 
-      if(entertainmentConfigurationResponse.at("errors").size() == 0){
+      if(entConfResponse.at("errors").size() == 0){
         // Listing entertainment configurations
-        for(const nlohmann::json& jsonEntertainmentConfiguration : entertainmentConfigurationResponse.at("data")){
-          std::string confId = jsonEntertainmentConfiguration.at("id");
-          std::string confName = jsonEntertainmentConfiguration.at("metadata").at("name");
+        for(const nlohmann::json& jsonEntConf : entConfResponse.at("data")){
 
-          const nlohmann::json& lightServices = jsonEntertainmentConfiguration.at("light_services");
+          EntertainmentConfiguration entConf = jsonEntConf.get<EntertainmentConfiguration>();
 
-          std::unordered_map<std::string, Device> lights;
-          
-          for(const nlohmann::json& lightService : lightServices){
-            const std::string& lightId = lightService.at("rid");
-
+          for(auto& [lightId, device] : entConf.devices){
             std::string lightUrl = "https://" + bridgeAddress + "/clip/v2/resource/light/" + lightId;
+
             auto jsonLightData = RequestUtils::sendRequest(lightUrl, "GET", "", headers);
-            const nlohmann::json& metadata = jsonLightData.at("data").at(0).at("metadata");
-
-            lights.insert({lightId, {lightId, metadata.at("name"), metadata.at("archetype")}});
+            auto deviceId = device.id;
+            device = jsonLightData.at("data").at(0).at("metadata").get<Huenicorn::Device>();
+            device.id = deviceId;
           }
 
-          Channels channels;
-          for(const auto& jsonChannel : jsonEntertainmentConfiguration.at("channels")){
-            channels.insert({jsonChannel.at("channel_id").get<uint8_t>(), {false, {}, 0.f}});
+          const auto& jsonChannels = jsonEntConf.at("channels");
+          for (const auto& jsonChannel : jsonChannels) {
+            uint8_t channelId = jsonChannel.at("channel_id").get<uint8_t>();
+            entConf.channels.insert({channelId, Channel{false, {}, 0.f}});
           }
 
-          entertainmentConfigurations.insert({confId, {confName, lights, channels}});
+          entConfs.insert({jsonEntConf.at("id").get<std::string>(), entConf});
         }
       }
 
-      return entertainmentConfigurations;
+      return entConfs;
     }
 
 
@@ -65,15 +64,15 @@ namespace Huenicorn
           for(const auto& service : jsonServices){
             if(service.at("rtype") == "entertainment"){
               std::string deviceId = service.at("rid");
-              std::string name = jsonData.at("metadata").at("name");
-              std::string archetype = jsonData.at("metadata").at("archetype");
 
-              devices.emplace(deviceId, Device{deviceId, name, archetype});
+              auto device = jsonData.at("metadata").get<Huenicorn::Device>();
+              device.id = deviceId;
+              devices.emplace(deviceId, device);
             }
           }
         }
       }
-      
+
       return devices;
     }
 
@@ -85,7 +84,7 @@ namespace Huenicorn
 
       auto jsonEntertainmentConfigurations = RequestUtils::sendRequest(resourceUrl, "GET", "", headers);
 
-      EntertainmentConfigurationsChannels entertainmentConfigurationsChannels;
+      EntertainmentConfigurationsChannels entConfsChannels;
 
       for(const auto& entConf : jsonEntertainmentConfigurations.at("data")){
         std::string configurationId = entConf.at("id");
@@ -93,12 +92,12 @@ namespace Huenicorn
           uint8_t channelId = jsonChannel.at("channel_id");
           for(const auto& jsonMember : jsonChannel.at("members")){
             std::string jsonMemberId = jsonMember.at("service").at("rid");
-            entertainmentConfigurationsChannels[configurationId][channelId].push_back(jsonMemberId);
+            entConfsChannels[configurationId][channelId].push_back(jsonMemberId);
           }
         }
       }
 
-      return entertainmentConfigurationsChannels;
+      return entConfsChannels;
     }
 
 
@@ -118,7 +117,7 @@ namespace Huenicorn
     {
       nlohmann::json jsonBody = {
         {"action", active ? "start" : "stop"},
-        {"metadata", {{"name", entertainmentConfigurationEntry.second.name()}}}
+        {"metadata", {{"name", entertainmentConfigurationEntry.second.name}}}
       };
 
       RequestUtils::Headers headers = {{"hue-application-key", username}};

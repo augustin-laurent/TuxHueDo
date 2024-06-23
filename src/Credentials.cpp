@@ -65,4 +65,13 @@ namespace Huenicorn
   {
     return hexStringToBytes(m_clientkey);
   }
+
+
+  void to_json(nlohmann::json& json, const Credentials& credentials)
+  {
+    json = nlohmann::json{
+      {"username", credentials.username()},
+      {"clientkey", credentials.clientkey()}
+    };
+  }
 }

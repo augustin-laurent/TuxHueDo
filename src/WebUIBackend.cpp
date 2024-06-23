@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 
 #include <Huenicorn/HuenicornCore.hpp>
-#include <Huenicorn/JsonSerializer.hpp>
 #include <Huenicorn/Logger.hpp>
 
 
@@ -135,7 +134,7 @@ namespace Huenicorn
 
   void WebUIBackend::_getEntertainmentConfigurations(crow::response& res) const
   {
-    auto entertainmentConfigurations = JsonSerializer::serialize(m_huenicornCore->entertainmentConfigurations());
+    auto entertainmentConfigurations = nlohmann::json(m_huenicornCore->entertainmentConfigurations());
     std::string currentEntertainmentConfigurationId = m_huenicornCore->currentEntertainmentConfigurationId().value();
 
     nlohmann::json jsonResponse = {
@@ -152,7 +151,7 @@ namespace Huenicorn
 
   void WebUIBackend::_getChannel(crow::response& res, uint8_t channelId) const
   {
-    std::string response = JsonSerializer::serialize(m_huenicornCore->channels().at(channelId)).dump();
+    std::string response = nlohmann::json(m_huenicornCore->channels().at(channelId)).dump();
 
     res.set_header("Content-Type", "application/json");
     res.write(response);
@@ -162,7 +161,7 @@ namespace Huenicorn
 
   void WebUIBackend::_getChannels(crow::response& res) const
   {
-    std::string response = JsonSerializer::serialize(m_huenicornCore->channels()).dump();
+    std::string response = nlohmann::json(m_huenicornCore->channels()).dump();
     res.set_header("Content-Type", "application/json");
     res.write(response);
     res.end();
@@ -228,7 +227,7 @@ namespace Huenicorn
     nlohmann::json jsonResponse = {
       {"succeeded", succeeded},
       {"entertainmentConfigurationId", entertainmentConfigurationId},
-      {"channels", JsonSerializer::serialize(m_huenicornCore->channels())}
+      {"channels", nlohmann::json(m_huenicornCore->channels())}
     };
 
     std::string response = jsonResponse.dump();
@@ -367,7 +366,7 @@ namespace Huenicorn
 
     nlohmann::json jsonResponse = nlohmann::json{
       {"succeeded", true},
-      {"channels", JsonSerializer::serialize(m_huenicornCore->channels())},
+      {"channels", nlohmann::json(m_huenicornCore->channels())},
     };
     
     if(active){

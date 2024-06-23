@@ -5,7 +5,6 @@
 
 #include <Huenicorn/ImageProcessing.hpp>
 #include <Huenicorn/Interpolation.hpp>
-#include <Huenicorn/JsonSerializer.hpp>
 #include <Huenicorn/Logger.hpp>
 #ifdef PIPEWIRE_GRABBER_AVAILABLE
 #include <Huenicorn/PipewireGrabber.hpp>
@@ -318,7 +317,7 @@ namespace Huenicorn
     if(m_selector->validSelection()){
       profile = nlohmann::json{
         {"entertainmentConfigurationId", m_selector->currentEntertainmentConfigurationId().value()},
-        {"channels", JsonSerializer::serialize(m_channels)}
+        {"channels", nlohmann::json(m_channels)}
       };
     }
 
@@ -491,7 +490,7 @@ namespace Huenicorn
 
     Channels channels;
 
-    for(const auto& [id, channel] : m_selector->currentEntertainmentConfiguration().channels()){
+    for(const auto& [id, channel] : m_selector->currentEntertainmentConfiguration().channels){
       bool found = false;
       const auto& members = ApiTools::matchDevices(entertainmentConfigurationsChannels.at(m_selector->currentEntertainmentConfigurationId().value()).at(id), devices);
       for(const auto& jsonProfileChannel : jsonChannels){
@@ -549,7 +548,7 @@ namespace Huenicorn
 
     {
       std::lock_guard lock(m_streamerMutex);
-      m_streamer = make_unique<Streamer>(credentials, m_config.bridgeAddress().value());
+      m_streamer = std::make_unique<Streamer>(credentials, m_config.bridgeAddress().value());
       m_streamer->setEntertainmentConfigurationId(m_selector->currentEntertainmentConfigurationId().value());
     }
 
