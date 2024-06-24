@@ -31,7 +31,7 @@ namespace Huenicorn
 
             auto jsonLightData = RequestUtils::sendRequest(lightUrl, "GET", "", headers);
             auto deviceId = device.id;
-            device = jsonLightData.at("data").at(0).at("metadata").get<Huenicorn::Device>();
+            device = jsonLightData.at("data").at(0).at("metadata").get<Device>();
             device.id = deviceId;
           }
 
@@ -65,7 +65,7 @@ namespace Huenicorn
             if(service.at("rtype") == "entertainment"){
               std::string deviceId = service.at("rid");
 
-              auto device = jsonData.at("metadata").get<Huenicorn::Device>();
+              auto device = jsonData.at("metadata").get<Device>();
               device.id = deviceId;
               devices.emplace(deviceId, device);
             }
