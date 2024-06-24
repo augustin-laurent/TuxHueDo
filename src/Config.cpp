@@ -94,9 +94,9 @@ namespace Huenicorn
   }
 
 
-  void Config::setCredentials(const std::string& username, const std::string& clientkey)
+  void Config::setCredentials(const Credentials& credentials)
   {
-    m_credentials.emplace(username, clientkey);
+    m_credentials.emplace(credentials);
     _save();
   }
 

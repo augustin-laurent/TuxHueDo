@@ -137,10 +137,9 @@ namespace Huenicorn
     /**
      * @brief Registers credentials
      * 
-     * @param username Username for the Hue bridge
-     * @param clientkey Client key for the Hue bridge
+     * @param credentials User credentials for the Hue bridge
      */
-    void setCredentials(const std::string& username, const std::string& clientkey);
+    void setCredentials(const Credentials& credentials);
 
 
     /**

@@ -143,11 +143,10 @@ namespace Huenicorn
       return {{"succeeded", false}, {"error", response.at(0).at("error").at("description")}};
     }
 
-    std::string username = response.at(0).at("success").at("username");
-    std::string clientkey = response.at(0).at("success").at("clientkey");
-    m_config.setCredentials(username, clientkey);
+    auto credentials = response.at(0).at("success").get<Credentials>();
+    m_config.setCredentials(credentials);
 
-    return {{"succeeded", true}, {"username", username}, {"clientkey", clientkey}};
+    return {{"succeeded", true}, {"username", credentials.username()}, {"clientkey", credentials.clientkey()}};
   }
 
 
@@ -279,7 +278,7 @@ namespace Huenicorn
         return false;
       }
 
-      m_config.setCredentials(credentials.username(), credentials.clientkey());
+      m_config.setCredentials(credentials);
 
       Logger::log("Successfully registered credentials");
     }

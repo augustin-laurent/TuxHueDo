@@ -23,6 +23,7 @@ namespace Huenicorn
     Credentials()
     {}
 
+
     /**
      * @brief Credentials constructor
      * 
