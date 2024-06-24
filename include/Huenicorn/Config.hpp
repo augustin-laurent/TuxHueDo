@@ -203,4 +203,6 @@ namespace Huenicorn
     unsigned m_subsampleWidth{0};
     Interpolation::Type m_interpolation{Interpolation::Type::Area};
   };
+
+  void to_json(nlohmann::json& jsonConfig, const Config& config);
 }

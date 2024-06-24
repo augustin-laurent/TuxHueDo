@@ -12,15 +12,17 @@ namespace Huenicorn
   std::vector<unsigned char> hexStringToBytes(const std::string& hexString);
   std::vector<unsigned char> stringToBytes(const std::string& string);
 
-
   /**
    * @brief Wrapper around Hue bridge user authentication data
    * 
    */
   class Credentials
   {
-  public:
+    public:
     // Constructor
+    Credentials()
+    {}
+
     /**
      * @brief Credentials constructor
      * 
@@ -62,6 +64,7 @@ namespace Huenicorn
      */
     std::vector<unsigned char> clientkeyBytes() const;
 
+    friend void from_json(const nlohmann::json& jsonCredentials, Credentials& credentials);
 
   private:
     // Attributes
@@ -70,6 +73,9 @@ namespace Huenicorn
   };
 
 
+  // Deserialization
+  void from_json(const nlohmann::json& jsonCredentials, Credentials& credentials);
+
   // Serialization
-  void to_json(nlohmann::json& json, const Credentials& credentials);
+  void to_json(nlohmann::json& jsonCredentials, const Credentials& credentials);
 }

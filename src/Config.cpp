@@ -179,7 +179,7 @@ namespace Huenicorn
         return false;
       }
 
-      m_credentials.emplace(jsonCredentials.at("username"), jsonCredentials.at("clientkey"));
+      m_credentials.emplace(jsonCredentials.get<Credentials>());
     }
 
     if(!ready){
@@ -212,33 +212,35 @@ namespace Huenicorn
 
   void Config::_save() const
   {
-    // Parameter that can safelty take a default value
-    nlohmann::json jsonOutConfig = {
-      {"subsampleWidth", m_subsampleWidth},
-      {"refreshRate", m_refreshRate},
-      {"restServerPort", m_restServerPort},
-      {"interpolation", m_interpolation},
-      {"boundBackendIP", m_boundBackendIP}
-    };
-
-    // Parameters that require user inputs
-    if(m_bridgeAddress.has_value()){
-      jsonOutConfig["bridgeAddress"] = m_bridgeAddress.value();
-    }
-
-    if(m_credentials.has_value()){
-      jsonOutConfig["credentials"] = nlohmann::json(m_credentials.value());
-    }
-
-    if(m_profileName.has_value()){
-      jsonOutConfig["profileName"] = m_profileName.value();
-    }
-
     if(!std::filesystem::exists(m_configFilePath)){
       std::filesystem::create_directories(m_configFilePath.parent_path());
     }
 
     std::ofstream configFile(m_configFilePath);
-    configFile << jsonOutConfig.dump(2) << "\n";
+    configFile << nlohmann::json(*this).dump(2) << "\n";
+  }
+
+
+  void to_json(nlohmann::json& jsonConfig, const Config& config)
+  {
+    jsonConfig = {
+      {"subsampleWidth", config.subsampleWidth()},
+      {"refreshRate", config.refreshRate()},
+      {"restServerPort", config.restServerPort()},
+      {"interpolation", config.interpolation()},
+      {"boundBackendIP", config.boundBackendIP()}
+    };
+
+    if(config.bridgeAddress().has_value()){
+      jsonConfig["bridgeAddress"] = config.bridgeAddress().value();
+    }
+
+    if(config.credentials().has_value()){
+      jsonConfig["credentials"] = nlohmann::json(config.credentials().value());
+    }
+
+    if(config.profileName().has_value()){
+      jsonConfig["profileName"] = config.profileName().value();
+    }
   }
 }
