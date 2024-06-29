@@ -1,4 +1,4 @@
-#include <Huenicorn/X11Grabber.hpp>
+#include <Huenicorn/Platforms/GnuLinux/X11Grabber.hpp>
 
 #include <err.h>
 

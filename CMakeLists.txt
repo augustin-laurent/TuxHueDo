@@ -29,47 +29,6 @@ find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
 
 
-# Check grabber-related libraries
-# Begin X11-related
-find_package(X11)
-# End X11-related
-
-# Begin Pipewire-related
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
-find_package(Gio)
-pkg_search_module(LIB_PIPEWIRE OPTIONAL libpipewire-0.3)
-pkg_check_modules(LIBGLIB glib-2.0 gio-2.0)
-# End Pipewire-related
-
-
-if(${X11_FOUND})
-  set(X11_GRABBER_AVAILABLE TRUE)
-  message("Able to build X11 Grabber !")
-
-  set(X11_GRABBER_SOURCES
-    src/X11Grabber.cpp
-    include/Huenicorn/X11Grabber.hpp
-  )
-endif()
-
-if(LIB_PIPEWIRE_FOUND AND GIO_FOUND AND LIBGLIB_FOUND)
-  set(PIPEWIRE_GRABBER_AVAILABLE TRUE)
-  message("Able to build Pipewire Grabber !")
-
-  set(PIPEWIRE_GRABBER_SOURCES
-    src/PipewireGrabber.cpp
-    src/XdgDesktopPortal.cpp
-    include/Huenicorn/PipewireGrabber.hpp
-    include/Huenicorn/XdgDesktopPortal.hpp
-  )
-endif()
-
-
-if(NOT (PIPEWIRER_GRABBER_AVAILABLE OR X11_GRABBER_AVAILABLE))
-  message(FATAL_ERROR "Missing dependencies to compile a least one grabber")
-endif()
-
-
 add_executable(${BINARY_NAME}
   src/main.cpp
   src/ApiTools.cpp
@@ -78,15 +37,17 @@ add_executable(${BINARY_NAME}
   src/Credentials.cpp
   src/Device.cpp
   src/DtlsClient.cpp
+  src/DummyGrabber.cpp
   src/EntertainmentConfiguration.cpp
   src/EntertainmentConfigurationSelector.cpp
   src/HuenicornCore.cpp
   src/ImageProcessing.cpp
   src/Interpolation.cpp
   src/Logger.cpp
-  src/Streamer.cpp
+  src/PlatformSelector.cpp
   src/RequestUtils.cpp
   src/SetupBackend.cpp
+  src/Streamer.cpp
   src/TickSynchronizer.cpp
   src/UV.cpp
   src/WebUIBackend.cpp
@@ -97,6 +58,7 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/Credentials.hpp
   include/Huenicorn/Device.hpp
   include/Huenicorn/DtlsClient.hpp
+  include/Huenicorn/DummyGrabber.hpp
   include/Huenicorn/EntertainmentConfiguration.hpp
   include/Huenicorn/EntertainmentConfigurationSelector.hpp
   include/Huenicorn/HuenicornCore.hpp
@@ -105,13 +67,19 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/Interpolation.hpp
   include/Huenicorn/IRestServer.hpp
   include/Huenicorn/Logger.hpp
+  include/Huenicorn/PlatformSelector.hpp
   include/Huenicorn/RequestUtils.hpp
   include/Huenicorn/SetupBackend.hpp
   include/Huenicorn/Streamer.hpp
   include/Huenicorn/TickSynchronizer.hpp
+  include/Huenicorn/TimingDefinitions.hpp
   include/Huenicorn/UV.hpp
   include/Huenicorn/WebUIBackend.hpp
 )
+
+if(LINUX)
+  include(cmake/platforms/GnuLinux.cmake)
+endif(LINUX)
 
 target_compile_definitions(${BINARY_NAME} PUBLIC PROJECT_VERSION=${DISPLAYED_VERSION})
 
@@ -130,39 +98,6 @@ target_link_libraries(${BINARY_NAME} PUBLIC
   ${MBEDTLS_CRYPTO}
   nlohmann_json::nlohmann_json
 )
-
-if(X11_GRABBER_AVAILABLE)
-  target_compile_definitions(${BINARY_NAME} PUBLIC X11_GRABBER_AVAILABLE=1)
-  target_sources(${BINARY_NAME} PRIVATE
-    ${X11_GRABBER_SOURCES}
-  )
-
-  target_link_libraries(${BINARY_NAME} PUBLIC
-    X11::X11
-    X11::Xext
-    X11::Xrandr
-  )
-endif()
-
-
-if(PIPEWIRE_GRABBER_AVAILABLE)
-  target_compile_definitions(${BINARY_NAME} PUBLIC PIPEWIRE_GRABBER_AVAILABLE=1)
-  target_sources(${BINARY_NAME} PRIVATE
-    ${PIPEWIRE_GRABBER_SOURCES}
-  )
-  
-  target_include_directories(${BINARY_NAME} PUBLIC
-    ${LIB_PIPEWIRE_INCLUDE_DIRS}
-    ${GIO_INCLUDE_DIRS}
-    ${GLIB_INCLUDE_DIRS}
-  )
-
-  target_link_libraries(${BINARY_NAME} PUBLIC
-    GIO::GIO
-    ${LIB_PIPEWIRE_LIBRARIES}
-    ${LIBGLIB_LIBRARIES}
-  )
-endif()
 
 
 target_compile_options(${BINARY_NAME} PRIVATE

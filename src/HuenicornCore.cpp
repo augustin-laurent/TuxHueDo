@@ -6,15 +6,11 @@
 #include <Huenicorn/ImageProcessing.hpp>
 #include <Huenicorn/Interpolation.hpp>
 #include <Huenicorn/Logger.hpp>
-#ifdef PIPEWIRE_GRABBER_AVAILABLE
-#include <Huenicorn/PipewireGrabber.hpp>
-#endif
 #include <Huenicorn/RequestUtils.hpp>
 #include <Huenicorn/SetupBackend.hpp>
 #include <Huenicorn/WebUIBackend.hpp>
-#ifdef X11_GRABBER_AVAILABLE
-#include <Huenicorn/X11Grabber.hpp>
-#endif
+#include <Huenicorn/DummyGrabber.hpp>
+#include <Huenicorn/PlatformSelector.hpp>
 
 
 using namespace std::chrono_literals;
@@ -432,24 +428,19 @@ namespace Huenicorn
 
   bool HuenicornCore::_initGrabber()
   {
-    std::string sessionType = std::getenv("XDG_SESSION_TYPE");
-
     try{
-#ifdef PIPEWIRE_GRABBER_AVAILABLE
-      if(sessionType == "wayland"){
-        m_grabber = std::make_unique<PipewireGrabber>(&m_config);
-        Logger::log("Started Pipewire grabber.");
-        return true;
-      }
-#endif
+      m_grabber = platformAdapter.getGrabber(&m_config);
 
-#ifdef X11_GRABBER_AVAILABLE
-      if(sessionType == "x11"){
-        m_grabber = std::make_unique<X11Grabber>(&m_config);
-        Logger::log("Started X11 grabber.");
+      if(m_grabber){
         return true;
       }
-#endif
+
+      // Falling back on dummy grabber
+      if(!m_grabber){
+        m_grabber = std::make_unique<DummyGrabber>(&m_config);
+        Logger::log("Started DummyGrabber.");
+        return true;
+      }
     }
     catch(const std::exception& e){
       Logger::error(e.what());

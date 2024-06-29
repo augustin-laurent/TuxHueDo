@@ -402,7 +402,7 @@ namespace Huenicorn
     ThreadedRestService m_webUIService;
 
     //  Image Processing
-    std::unique_ptr<IGrabber> m_grabber;
+    SharedGrabber m_grabber;
     cv::Mat m_cvImage;
   };
 }

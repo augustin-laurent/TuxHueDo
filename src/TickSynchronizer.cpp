@@ -5,14 +5,14 @@
 
 namespace Huenicorn
 {
-  TickSynchronizer::TickSynchronizer(TimeUnitType tickInterval):
+  TickSynchronizer::TickSynchronizer(Timing::TimeUnitType tickInterval):
   m_tickInterval(tickInterval)
   {
-    std::fill(m_loadRateHistory, m_loadRateHistory + LoadRateHistorySize, Duration{0.0});
+    std::fill(m_loadRateHistory, m_loadRateHistory + LoadRateHistorySize, Timing::Duration{0.0});
   }
 
 
-  TickSynchronizer::TimeUnit TickSynchronizer::tickInterval() const
+  Timing::TimeUnit TickSynchronizer::tickInterval() const
   {
     return m_tickInterval;
   }
@@ -30,15 +30,15 @@ namespace Huenicorn
   }
 
 
-  void TickSynchronizer::setTickInterval(TimeUnitType tickInterval)
+  void TickSynchronizer::setTickInterval(Timing::TimeUnitType tickInterval)
   {
-    m_tickInterval = Duration{tickInterval};
+    m_tickInterval = Timing::Duration{tickInterval};
   }
 
 
   void TickSynchronizer::start()
   {
-    m_timePoint = ClockType::now();
+    m_timePoint = Timing::ClockType::now();
   }
 
 
@@ -51,24 +51,24 @@ namespace Huenicorn
   }
 
 
-  TickSynchronizer::TimeUnitType TickSynchronizer::_syncWithTick(const TimePoint& startTime)
+  Timing::TimeUnitType TickSynchronizer::_syncWithTick(const Timing::TimePoint& startTime)
   {
     // Measure
-    TimePoint now = ClockType::now();
+    Timing::TimePoint now = Timing::ClockType::now();
     m_loadRate = _computeLoad(startTime, now);
 
     // Sync
-    if(m_tickInterval == TimeUnit::zero()){
+    if(m_tickInterval == Timing::TimeUnit::zero()){
       return 0;
     }
 
-    TimePoint next = startTime + m_tickInterval;
+    Timing::TimePoint next = startTime + m_tickInterval;
 
     if(next > now){
       std::this_thread::sleep_until(next);
     }
     else{
-      Duration excess = now - (startTime + m_tickInterval);
+      Timing::Duration excess = now - (startTime + m_tickInterval);
       float ratio = excess / m_tickInterval;
 
       m_lastExcess = {excess, ratio};

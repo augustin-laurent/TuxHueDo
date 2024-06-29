@@ -10,6 +10,10 @@ namespace Huenicorn
 {
   class Config;
 
+  class IGrabber;
+
+  using SharedGrabber = std::shared_ptr<IGrabber>;
+  using WeakGrabber = std::weak_ptr<IGrabber>;
 
   /**
    * @brief Abstract class to implement for screen capture

@@ -4,7 +4,7 @@
   As I spent days to do try to achieve the same result in a less concise way, I feel more confident using this one and give it some personnal changes
 */
 
-#include <Huenicorn/XdgDesktopPortal.hpp>
+#include <Huenicorn/Platforms/GnuLinux/XdgDesktopPortal.hpp>
 
 #include <algorithm>
 #include <future>

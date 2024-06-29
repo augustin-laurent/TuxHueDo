@@ -2,6 +2,7 @@
 
 #include <chrono>
 
+#include <Huenicorn/TimingDefinitions.hpp>
 
 namespace Huenicorn
 {
@@ -14,14 +15,6 @@ namespace Huenicorn
     static constexpr size_t LoadRateHistorySize = 10;
 
   public:
-    //using TimeScale = std::ratio<1, 1>;
-    using TimeScale = std::ratio<1, 1>;
-    using TimeUnitType = double;
-    using ClockType = std::chrono::steady_clock;
-    using TimeUnit = std::chrono::duration<TimeUnitType, TimeScale>;
-    using Duration = TimeUnit;
-    using TimePoint = std::chrono::time_point<ClockType, TimeUnit>;
-
 
     /**
      * @brief Time statistics for exceeded time
@@ -29,7 +22,7 @@ namespace Huenicorn
      */
     struct Excess
     {
-      Duration extra;
+      Timing::Duration extra;
       float rate;
     };
 
@@ -40,7 +33,7 @@ namespace Huenicorn
      * 
      * @param tickInterval The duration of the interval to sync on in defined \ref TimeScale
      */
-    TickSynchronizer(TimeUnitType tickInterval);
+    TickSynchronizer(Timing::TimeUnitType tickInterval);
 
 
   // Getters
@@ -49,7 +42,7 @@ namespace Huenicorn
      * 
      * @return TimeUnitType
      */
-    TimeUnit tickInterval() const;
+    Timing::TimeUnit tickInterval() const;
 
 
     /**
@@ -74,7 +67,7 @@ namespace Huenicorn
      * 
      * @param tickInterval Tick interval duration to set
      */
-    void setTickInterval(TimeUnitType tickInterval);
+    void setTickInterval(Timing::TimeUnitType tickInterval);
 
 
   // Methods
@@ -100,7 +93,7 @@ namespace Huenicorn
      * @param startTime Time point to compare
      * @return int The time exces factor to compute for the next interval
      */
-    TimeUnitType _syncWithTick(const TimePoint& startTime);
+    Timing::TimeUnitType _syncWithTick(const Timing::TimePoint& startTime);
 
 
     /**
@@ -110,10 +103,10 @@ namespace Huenicorn
      * @param now
      * @return float
      */
-    inline float _computeLoad(const TimePoint& startTime, const TimePoint& now)
+    inline float _computeLoad(const Timing::TimePoint& startTime, const Timing::TimePoint& now)
     {
-      Duration duration = now - startTime;
-      m_tickAverage = _approxRollingAverage<Duration>(m_tickAverage, duration);
+      Timing::Duration duration = now - startTime;
+      m_tickAverage = _approxRollingAverage<Timing::Duration>(m_tickAverage, duration);
 
       return m_tickAverage / m_tickInterval;
     }
@@ -139,14 +132,14 @@ namespace Huenicorn
     }
 
   // Attributes
-    TimeUnit m_tickInterval;
-    TimePoint m_timePoint;
-    Duration m_tickAverage{0};
+    Timing::TimeUnit m_tickInterval;
+    Timing::TimePoint m_timePoint;
+    Timing::Duration m_tickAverage{0};
 
-    Duration m_loadRateHistory[LoadRateHistorySize];
+    Timing::Duration m_loadRateHistory[LoadRateHistorySize];
     unsigned m_loadRateHistoryCursorId{0};
     float m_loadRate;
 
-    Excess m_lastExcess{Duration{0}, 0.f};
+    Excess m_lastExcess{Timing::Duration{0}, 0.f};
   };
 }

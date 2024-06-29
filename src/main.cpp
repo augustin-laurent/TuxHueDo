@@ -1,12 +1,11 @@
 #include <thread>
+#include <memory>
+#include <csignal>
 
 #include <Huenicorn/HuenicornCore.hpp>
 #include <Huenicorn/Logger.hpp>
+#include <Huenicorn/PlatformSelector.hpp>
 
-#include <csignal>
-#include <memory>
-
-#include <pwd.h>
 
 #define xstr(s) preprocess_str(s)
 #define preprocess_str(s) #s
@@ -24,7 +23,7 @@ class Application
 public:
   void start()
   {
-    m_core = std::make_unique<Huenicorn::HuenicornCore>(Version, _getConfigRoot());
+    m_core = std::make_unique<Huenicorn::HuenicornCore>(Version, Huenicorn::platformAdapter.getConfigFilePath());
     m_applicationThread.emplace([&](){
       m_core->start();
     });
@@ -46,17 +45,6 @@ public:
 
 
 private:
-  std::filesystem::path _getConfigRoot()
-  {
-    const char* homeDir;
-    if((homeDir = getenv("HOME")) == NULL){
-      homeDir = getpwuid(getuid())->pw_dir;
-    }
-
-    return std::filesystem::path(homeDir) / ".config/huenicorn";
-  }
-
-
   std::unique_ptr<Huenicorn::HuenicornCore> m_core;
   std::optional<std::thread> m_applicationThread;
 };
