@@ -2,6 +2,10 @@
 
 A free Philips Hue™ screen synchronizer for Gnu/Linux
 
+<p align="center">
+  <img src="assets/logo.svg" alt="Logo" width="256" height="256">
+</p>
+
 ## Description
 
 Huenicorn is a free ambilight driver for Gnu/Linux.
@@ -16,14 +20,17 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.7 is available.
+Huenicorn 1.0.8 is available.
 
 ### This revision brings:
-* Bug fixes for Wayland session
-  * Config file now features valid data after initial setup
-  * Grabber no longer crashes in certain conditions after selecting a screen
-  * Cancellation on screen selection now exits Huenicorn gracefully
-  * Connection to the bridge is no longer interrupted on still image
+* Small fix
+  * For subsample size candidates and their default selection
+* Global refactor
+  * Enhance serialization/deserialization for internal data
+  * Enhance logger flexibility
+  * Rework project file structure to anticipate cross-platform portage
+  * Adding a dummy grabber (providing rainbow shift) for the case no real grabber could be started
+* Integrate logo as asset for ReadMe and Web UI favicon
 
 ## Getting Started
 
@@ -231,7 +238,7 @@ This file contains a list of channels related to an entertainment configuration.
     * **uvA**: (Object) Top-left corner coordinate
       * **x**: (Float) x coordinate
       * **y**: (Float) y coordinate
-    * **uvB**: (Object) Bottom-reft corner coordinate
+    * **uvB**: (Object) Bottom-right corner coordinate
       * **x**: (Float) x coordinate
       * **y**: (Float) y coordinate
 * **entertainmentConfigurationId**: (String) UUID of the related entertainment configuration
@@ -245,7 +252,9 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
-* 1.0.7 (Latest)
+* 1.0.8 (Latest)
+  * Global code restructuration and logo integration
+* 1.0.7
   * Bug fixes for Wayland sessions
 * 1.0.6
   * Library replacements and better compiler support
