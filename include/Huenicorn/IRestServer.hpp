@@ -31,7 +31,8 @@ namespace Huenicorn
       m_contentTypes = {
         {".js", "text/javascript"},
         {".html", "text/html"},
-        {".css", "text/css"}
+        {".css", "text/css"},
+        {".svg", "image/svg+xml"}
       };
 
       m_app.loglevel(crow::LogLevel::Warning);

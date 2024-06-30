@@ -146,8 +146,10 @@ endif(${BUILD_DOCUMENTATION})
 
 # Copy webroot to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
+
+  # Then copy logo as favicon
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/assets/logo.svg $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot/favicon.svg
 )
 
 # Copy readme to build
