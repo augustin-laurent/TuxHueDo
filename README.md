@@ -120,14 +120,14 @@ sudo add-apt-repository universe
 sudo apt-get update
 
 # For X.Org support:
-sudo apt-get install libx11-dev libxext-dev
+sudo apt-get install libx11-dev libxext-dev libxrandr-dev
 
 # For Wayland support:
 sudo apt-get install libglib2.0-dev libpipewire-0.3-dev 
 
 
 # Mandatory libraries
-sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev
+sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev libboost-all-dev
 
 # Crow .deb installer can be downloaded from deb on their repository: https://github.com/CrowCpp/Crow/releases/tag/v1.0+5
 sudo dpkg -i crow-v1.0+5.deb
