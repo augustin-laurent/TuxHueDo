@@ -125,8 +125,8 @@ namespace Huenicorn
 
   nlohmann::json HuenicornCore::registerNewUser()
   {
-    std::string login = getlogin();
-    std::string deviceType = "huenicorn#" + login;
+    std::string sessionUsername = platformAdapter.getUsername();
+    std::string deviceType = "huenicorn#" + sessionUsername;
 
     nlohmann::json request = {{"devicetype", deviceType}, {"generateclientkey", true}};
     auto response = RequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api", "POST", request.dump());
