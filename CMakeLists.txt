@@ -77,9 +77,9 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/WebUIBackend.hpp
 )
 
-if(LINUX)
+if(UNIX AND NOT APPLE) # For Gnu/Linux
   include(cmake/platforms/GnuLinux.cmake)
-endif(LINUX)
+endif()
 
 target_compile_definitions(${BINARY_NAME} PUBLIC PROJECT_VERSION=${DISPLAYED_VERSION})
 

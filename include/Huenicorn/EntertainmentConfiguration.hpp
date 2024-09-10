@@ -11,7 +11,7 @@
 namespace Huenicorn
 {
   // Type definitions
-  class EntertainmentConfiguration;
+  struct EntertainmentConfiguration;
   using EntertainmentConfigurations = std::unordered_map<std::string, EntertainmentConfiguration>;
   using EntertainmentConfigurationsIterator = EntertainmentConfigurations::iterator;
   using EntertainmentConfigurationEntry = std::pair<std::string, EntertainmentConfiguration>;
