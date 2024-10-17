@@ -8,6 +8,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #include <pipewire/pipewire.h>
 #include <spa/param/video/format-utils.h>
 #pragma GCC diagnostic pop
@@ -39,12 +40,13 @@ namespace Huenicorn
     struct PipewireData
     {
       spa_hook coreListener;
-      pw_thread_loop* loop;
-      pw_context* context;
-      pw_stream* stream;
+      pw_main_loop* loop{nullptr};
+      pw_context* context{nullptr};
+      pw_stream* stream{nullptr};
       spa_video_info format;
       SafeDoubleBuffer frameDoubleBuffer;
-      std::optional<std::promise<bool>> screenDataReadyPromise;
+      std::promise<bool> screenDataReadyPromise;
+      bool promiseSetAlready{false};
       Config* config;
     };
 

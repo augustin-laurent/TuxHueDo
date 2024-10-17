@@ -11,6 +11,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #include <spa/debug/types.h>
 #include <spa/param/video/type-info.h>
 #pragma GCC diagnostic pop
@@ -35,12 +36,9 @@ namespace Huenicorn
       throw std::runtime_error("Failed to get monitor file descriptor");
     }
 
-    m_pwData.screenDataReadyPromise.emplace();
-    auto configDataReadyFuture = m_pwData.screenDataReadyPromise.value().get_future();
+    auto configDataReadyFuture = m_pwData.screenDataReadyPromise.get_future();
     m_pipewireThread.emplace(_pipewireThread, &m_capture, &m_pwData);
     configDataReadyFuture.wait();
-
-    m_pwData.screenDataReadyPromise = std::nullopt;
   }
 
 
@@ -83,23 +81,25 @@ namespace Huenicorn
   {
     (void)id;
     (void)seq;
+    (void)userData;
 
-    PipewireData* pw = static_cast<PipewireData*>(userData);
+    //PipewireData* pw = static_cast<PipewireData*>(userData);
 
     // TODO : See if extra checks are required
-    pw_thread_loop_signal(pw->loop, FALSE);
+    //pw_thread_loop_signal(pw->loop, FALSE);
   }
 
 
   void PipewireGrabber::_onCoreErrorCallback(void* userData, uint32_t id, int seq, int res, const char* message)
   {
-    PipewireData* pw = static_cast<PipewireData*>(userData);
+    (void)userData;
+    //PipewireData* pw = static_cast<PipewireData*>(userData);
 
     std::stringstream ss;
     ss << "[pipewire] Error id: " << id << " seq: " << seq << " res: " << res << "" << g_strerror(res) << " " << message << std::endl;
     Logger::error(ss.str());
 
-    pw_thread_loop_signal(pw->loop, FALSE);
+    //pw_thread_loop_signal(pw->loop, FALSE);
   }
 
 
@@ -170,8 +170,10 @@ namespace Huenicorn
     Logger::debug(ss.str());
     */
 
-    if(pw->screenDataReadyPromise.has_value()){
-      pw->screenDataReadyPromise.value().set_value(true);
+
+    if(!pw->promiseSetAlready){
+      pw->screenDataReadyPromise.set_value(true);
+      pw->promiseSetAlready = true;
     }
   }
 
@@ -192,7 +194,7 @@ namespace Huenicorn
 
   void PipewireGrabber::_pipewireThread(XdgDesktopPortal::Capture* capture, PipewireData* pw)
   {
-    capture->updateXdgContext = false;
+    //capture->updateXdgContext = false;
 
     pw_init(NULL, NULL);
     pw_core_events coreEvents;
@@ -206,25 +208,14 @@ namespace Huenicorn
     streamEvents.param_changed = _onStreamParamChanged;
     streamEvents.process = _onStreamProcess;
 
-    pw->loop = pw_thread_loop_new("PipeWire thread loop", NULL);
-    pw->context = pw_context_new(pw_thread_loop_get_loop(pw->loop), NULL, 0);
-
-    if(pw_thread_loop_start(pw->loop) < 0){
-      throw std::runtime_error("Could not start thread loop");
-    }
-
-    pw_thread_loop_lock(pw->loop);
+    pw->loop = pw_main_loop_new(NULL);
+    pw->context = pw_context_new(pw_main_loop_get_loop(pw->loop), NULL, 0);
 
     auto core = pw_context_connect_fd(pw->context, fcntl(capture->pwFd, F_DUPFD_CLOEXEC, 5), NULL, 0);
-    if(!core){
-      Logger::error("Pipewire core creation error : Could not connect fd");
-      pw_thread_loop_unlock(pw->loop);
-
-      return;
-    }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
     pw_core_add_listener(core, &pw->coreListener, &coreEvents, pw);
 
     auto props = pw_properties_new(
@@ -234,9 +225,15 @@ namespace Huenicorn
       NULL
     );
 
-    std::string stream_name = "HuenicornStream";
+    std::string streamName = "HuenicornStream";
 
-    pw->stream = pw_stream_new(core, stream_name.c_str(), props);
+    pw->stream = pw_stream_new_simple(
+      pw_main_loop_get_loop(pw->loop),
+      streamName.c_str(),
+      props,
+      &streamEvents,
+      pw
+    );
 
     spa_hook streamListener;
     pw_stream_add_listener(pw->stream, &streamListener, &streamEvents, pw);
@@ -288,37 +285,30 @@ namespace Huenicorn
 #pragma GCC diagnostic pop
 
     pw_stream_connect(pw->stream, PW_DIRECTION_INPUT, capture->pwNode, static_cast<pw_stream_flags>(PW_STREAM_FLAG_AUTOCONNECT | PW_STREAM_FLAG_MAP_BUFFERS), params, 1);
-    pw_thread_loop_unlock(pw->loop);
+  
+
+    pw_main_loop_run(pw->loop);
+
+    pw_stream_disconnect(pw->stream);
+
+    g_clear_pointer(&pw->stream, pw_stream_destroy);
+
+    g_clear_pointer(&pw->context, pw_context_destroy);
+    g_clear_pointer(&pw->loop, pw_main_loop_destroy);
   }
 
 
   void PipewireGrabber::_teardownPipewire()
   {
-    if(!m_pwData.loop){
-      return;
-    }
-
-    pw_thread_loop_lock(m_pwData.loop);
-    if (m_pwData.stream){
-      pw_stream_disconnect(m_pwData.stream);
-    }
-
-    if(m_pwData.stream){
-      pw_stream_destroy(m_pwData.stream);
-    }
-
-    pw_thread_loop_unlock(m_pwData.loop);
-
     if(m_pwData.loop){
-      pw_thread_loop_stop(m_pwData.loop);
+      // Quit the loop
+      pw_main_loop_quit(m_pwData.loop);
     }
 
-    if(m_pwData.context){
-      pw_context_destroy(m_pwData.context);
-    }
-
-    if(m_pwData.loop){
-      pw_thread_loop_destroy(m_pwData.loop);
+    // Waiting for thread to finish
+    if(m_pipewireThread.has_value()){
+      m_pipewireThread.value().join();
+      m_pipewireThread.reset();
     }
 
     if(m_capture.pwFd > 0){
