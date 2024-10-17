@@ -123,7 +123,7 @@ sudo apt-get update
 sudo apt-get install libx11-dev libxext-dev libxrandr-dev
 
 # For Wayland support:
-sudo apt-get install libglib2.0-dev libpipewire-0.3-dev 
+sudo apt-get install libglib2.0-dev libpipewire-0.3-dev wayland-devel
 
 
 # Mandatory libraries
