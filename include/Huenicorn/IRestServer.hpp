@@ -6,7 +6,10 @@
 #include <optional>
 #include <unordered_set>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <crow.h>
+#pragma GCC diagnostic pop
 
 
 namespace Huenicorn
