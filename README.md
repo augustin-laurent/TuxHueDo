@@ -20,17 +20,12 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.8 is available.
+Huenicorn 1.0.9 is available.
 
 ### This revision brings:
-* Small fix
-  * For subsample size candidates and their default selection
-* Global refactor
-  * Enhance serialization/deserialization for internal data
-  * Enhance logger flexibility
-  * Rework project file structure to anticipate cross-platform portage
-  * Adding a dummy grabber (providing rainbow shift) for the case no real grabber could be started
-* Integrate logo as asset for ReadMe and Web UI favicon
+* Fix attempt for Wayland segfault
+  * A first step has been made to address this crash. It still not working for every distro but it's the best that could be done so far
+  * Disabling warning for Crow inclusion
 
 ## Getting Started
 
@@ -252,6 +247,8 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
+* 1.0.9
+  * Small step forward for fixing wayland crash
 * 1.0.8 (Latest)
   * Global code restructuration and logo integration
 * 1.0.7
