@@ -522,9 +522,7 @@ namespace Huenicorn
     std::string serviceURL = serviceUrlStream.str();
     Logger::log("Management WebUI is ready and available at ", serviceURL);
 
-    if(system(std::string("xdg-open " + serviceURL).c_str()) != 0){
-      Logger::error("Failed to open browser");
-    }
+    platformAdapter.openWebBrowser(serviceURL);
   }
 
 

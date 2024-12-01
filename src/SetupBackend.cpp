@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include <Huenicorn/HuenicornCore.hpp>
+#include <Huenicorn/PlatformSelector.hpp>
 #include <Huenicorn/Logger.hpp>
 
 using namespace std::chrono_literals;
@@ -80,9 +81,7 @@ namespace Huenicorn
     std::string serviceURL = serviceUrlStream.str();
     Logger::log("Setup WebUI is ready and available at ", serviceURL);
 
-    if(system(std::string("xdg-open " + serviceURL).c_str()) != 0){
-      Logger::error("Failed to open browser");
-    }
+    platformAdapter.openWebBrowser(serviceURL);
   }
 
 
