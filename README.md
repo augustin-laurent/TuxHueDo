@@ -242,6 +242,27 @@ This file contains a list of channels related to an entertainment configuration.
 
 Huenicorn can be shut down through the web interface or by sending a termination signal.
 
+## Troubleshooting
+
+### Crash after screen selection on Wayland session
+
+There is a known bug affecting Huenicorn depending on build parameters. This problem was "half-solved" since 1.0.9 but can somehow persist under certain circumstances.
+
+Huenicorn can then be rebuilt with different optimisation flags to hopefully result in a functional result.
+
+Replace ```<CMakeBuildType>``` with on of the values below:
+- Release
+- MinSizeRel
+- Debug
+- RelWithDebInfo
+
+```
+cmake -DCMAKE_BUILD_TYPE=<CMakeBuildType> -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ..
+make
+```
+
+Then try running Huenicorn again to see if it can now go beyond screen selection.
+
 ## Website
 
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
