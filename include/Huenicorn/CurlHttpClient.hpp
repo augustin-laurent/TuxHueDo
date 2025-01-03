@@ -25,8 +25,18 @@ namespace Huenicorn
       }
     };
 
+    struct CurlSlistDeleter
+    {
+      void operator()(curl_slist* slist) const
+      {
+        curl_slist_free_all(slist);
+      }
+    };
+
 
     using UniqueCurlHandle = std::unique_ptr<CURL, CurlDeleter>;
+    using UniqueCurlSlist = std::unique_ptr<curl_slist, CurlSlistDeleter>;
+
 
   public:
     using Headers = std::multimap<std::string, std::string>;
@@ -41,11 +51,5 @@ namespace Huenicorn
      * @return nlohmann::json JSON response
      */
     virtual nlohmann::json sendRequest(const std::string& url, const std::string& method, const std::string& body = "", const Headers& headers = {}) override;
-
-
-  private:
-    static void _ensureInitialisation();
-
-    static UniqueCurlHandle s_handle;
   };
 }
