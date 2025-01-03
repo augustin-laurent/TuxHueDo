@@ -35,17 +35,18 @@ add_executable(${BINARY_NAME}
   src/Channel.cpp
   src/Config.cpp
   src/Credentials.cpp
+  src/CurlHttpClient.cpp
   src/Device.cpp
   src/DtlsClient.cpp
   src/DummyGrabber.cpp
   src/EntertainmentConfiguration.cpp
   src/EntertainmentConfigurationSelector.cpp
+  src/HttpRequestUtils.cpp
   src/HuenicornCore.cpp
   src/ImageProcessing.cpp
   src/Interpolation.cpp
   src/Logger.cpp
   src/PlatformSelector.cpp
-  src/RequestUtils.cpp
   src/SetupBackend.cpp
   src/Streamer.cpp
   src/TickSynchronizer.cpp
@@ -56,11 +57,13 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/Color.hpp
   include/Huenicorn/Config.hpp
   include/Huenicorn/Credentials.hpp
+  include/Huenicorn/CurlHttpClient.hpp
   include/Huenicorn/Device.hpp
   include/Huenicorn/DtlsClient.hpp
   include/Huenicorn/DummyGrabber.hpp
   include/Huenicorn/EntertainmentConfiguration.hpp
   include/Huenicorn/EntertainmentConfigurationSelector.hpp
+  include/Huenicorn/HttpRequestUtils.hpp
   include/Huenicorn/HuenicornCore.hpp
   include/Huenicorn/IGrabber.hpp
   include/Huenicorn/ImageProcessing.hpp
@@ -68,7 +71,6 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/IRestServer.hpp
   include/Huenicorn/Logger.hpp
   include/Huenicorn/PlatformSelector.hpp
-  include/Huenicorn/RequestUtils.hpp
   include/Huenicorn/SetupBackend.hpp
   include/Huenicorn/Streamer.hpp
   include/Huenicorn/TickSynchronizer.hpp

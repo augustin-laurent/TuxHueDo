@@ -1,4 +1,4 @@
-#include <Huenicorn/RequestUtils.hpp>
+#include <Huenicorn/CurlHttpClient.hpp>
 
 #include <stdexcept>
 
@@ -9,7 +9,7 @@
 
 namespace Huenicorn
 {
-  RequestUtils::UniqueCurlHandle RequestUtils::s_handle = nullptr;
+  CurlHttpClient::UniqueCurlHandle CurlHttpClient::s_handle = nullptr;
 
   size_t writeCallback(char* ptr, size_t size, size_t nmemb, std::string* data) {
     data->append(ptr, size * nmemb);
@@ -17,7 +17,7 @@ namespace Huenicorn
   }
 
 
-  void RequestUtils::_ensureInitialisation()
+  void CurlHttpClient::_ensureInitialisation()
   {
     if(s_handle){
       return;
@@ -28,7 +28,7 @@ namespace Huenicorn
   }
 
 
-  nlohmann::json RequestUtils::sendRequest(const std::string& url, const std::string& method, const std::string& body, const Headers& headers)
+  nlohmann::json CurlHttpClient::sendRequest(const std::string& url, const std::string& method, const std::string& body, const Headers& headers)
   {
     _ensureInitialisation();
 

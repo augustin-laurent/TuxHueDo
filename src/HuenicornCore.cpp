@@ -6,7 +6,7 @@
 #include <Huenicorn/ImageProcessing.hpp>
 #include <Huenicorn/Interpolation.hpp>
 #include <Huenicorn/Logger.hpp>
-#include <Huenicorn/RequestUtils.hpp>
+#include <Huenicorn/HttpRequestUtils.hpp>
 #include <Huenicorn/SetupBackend.hpp>
 #include <Huenicorn/WebUIBackend.hpp>
 #include <Huenicorn/DummyGrabber.hpp>
@@ -107,7 +107,7 @@ namespace Huenicorn
   {
     std::string bridgeAddress;
     try{
-      auto detectedBridgeData = RequestUtils::sendRequest("https://discovery.meethue.com/", "GET");
+      auto detectedBridgeData = HttpRequestUtils::sendRequest("https://discovery.meethue.com/", "GET");
 
       if(detectedBridgeData.size() < 1){
         return {{"succeeded", false}, {"error", "Could not autodetect bridge."}};
@@ -129,7 +129,7 @@ namespace Huenicorn
     std::string deviceType = "huenicorn#" + sessionUsername;
 
     nlohmann::json request = {{"devicetype", deviceType}, {"generateclientkey", true}};
-    auto response = RequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api", "POST", request.dump());
+    auto response = HttpRequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api", "POST", request.dump());
 
     if(response.size() < 1){
       return {{"succeeded", false}, {"error", "unreachable bridge"}};
@@ -246,7 +246,7 @@ namespace Huenicorn
         sanitizedAddress.pop_back();
       }
 
-      auto response = RequestUtils::sendRequest(sanitizedAddress + "/api", "GET", "");
+      auto response = HttpRequestUtils::sendRequest(sanitizedAddress + "/api", "GET", "");
       if(response.size() == 0){
         return false;
       }
@@ -265,7 +265,7 @@ namespace Huenicorn
   bool HuenicornCore::validateCredentials(const Credentials& credentials)
   {
     try{
-      auto response = RequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api/" + credentials.username(), "GET", "");
+      auto response = HttpRequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api/" + credentials.username(), "GET", "");
       if(response.size() == 0){
         return false;
       }
