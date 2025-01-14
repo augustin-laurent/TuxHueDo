@@ -4,18 +4,10 @@ set(PROJECT_NAME huenicorn)
 set(BINARY_NAME huenicorn)
 
 project(${PROJECT_NAME} VERSION 1.0.9)
-#set(RC_NUMBER 1)
 
 
 set(BUILD_DOCUMENTATION FALSE CACHE BOOL "Build documentation")
 set(BUILD_TESTS FALSE CACHE BOOL "Build tests")
-
-
-set(DISPLAYED_VERSION ${PROJECT_VERSION})
-
-if(RC_NUMBER)
-  set(DISPLAYED_VERSION ${DISPLAYED_VERSION}-rc${RC_NUMBER})
-endif()
 
 
 # Check mandatory libraries
@@ -28,6 +20,10 @@ find_library(MBEDTLS_LIBS mbedtls REQUIRED)
 find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
 
+configure_file(
+  config/Version.hpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp
+)
 
 add_executable(${BINARY_NAME}
   src/main.cpp
@@ -77,19 +73,21 @@ add_executable(${BINARY_NAME}
   include/Huenicorn/TimingDefinitions.hpp
   include/Huenicorn/UV.hpp
   include/Huenicorn/WebUIBackend.hpp
+
+  include/Huenicorn/Version.hpp
 )
+
 
 if(UNIX AND NOT APPLE) # For Gnu/Linux
   include(cmake/platforms/GnuLinux.cmake)
 endif()
-
-target_compile_definitions(${BINARY_NAME} PUBLIC PROJECT_VERSION=${DISPLAYED_VERSION})
 
 set_target_properties(${BINARY_NAME} PROPERTIES CXX_STANDARD 20)
 
 target_include_directories(${BINARY_NAME} PUBLIC
   ${OpenCV_INCLUDE_DIRS}
   include
+  ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
 target_link_libraries(${BINARY_NAME} PUBLIC
