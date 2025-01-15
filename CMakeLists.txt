@@ -21,60 +21,60 @@ find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
 
 configure_file(
-  config/Version.hpp.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/Version.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp
 )
 
 add_executable(${BINARY_NAME}
-  src/main.cpp
-  src/ApiTools.cpp
-  src/Channel.cpp
-  src/Config.cpp
-  src/Credentials.cpp
-  src/CurlHttpClient.cpp
-  src/Device.cpp
-  src/DtlsClient.cpp
-  src/DummyGrabber.cpp
-  src/EntertainmentConfiguration.cpp
-  src/EntertainmentConfigurationSelector.cpp
-  src/HttpRequestUtils.cpp
-  src/HuenicornCore.cpp
-  src/ImageProcessing.cpp
-  src/Interpolation.cpp
-  src/Logger.cpp
-  src/PlatformSelector.cpp
-  src/SetupBackend.cpp
-  src/Streamer.cpp
-  src/TickSynchronizer.cpp
-  src/UV.cpp
-  src/WebUIBackend.cpp
-  include/Huenicorn/ApiTools.hpp
-  include/Huenicorn/Channel.hpp
-  include/Huenicorn/Color.hpp
-  include/Huenicorn/Config.hpp
-  include/Huenicorn/Credentials.hpp
-  include/Huenicorn/CurlHttpClient.hpp
-  include/Huenicorn/Device.hpp
-  include/Huenicorn/DtlsClient.hpp
-  include/Huenicorn/DummyGrabber.hpp
-  include/Huenicorn/EntertainmentConfiguration.hpp
-  include/Huenicorn/EntertainmentConfigurationSelector.hpp
-  include/Huenicorn/HttpRequestUtils.hpp
-  include/Huenicorn/HuenicornCore.hpp
-  include/Huenicorn/IGrabber.hpp
-  include/Huenicorn/ImageProcessing.hpp
-  include/Huenicorn/Interpolation.hpp
-  include/Huenicorn/IRestServer.hpp
-  include/Huenicorn/Logger.hpp
-  include/Huenicorn/PlatformSelector.hpp
-  include/Huenicorn/SetupBackend.hpp
-  include/Huenicorn/Streamer.hpp
-  include/Huenicorn/TickSynchronizer.hpp
-  include/Huenicorn/TimingDefinitions.hpp
-  include/Huenicorn/UV.hpp
-  include/Huenicorn/WebUIBackend.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ApiTools.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Channel.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Config.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Credentials.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/CurlHttpClient.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DtlsClient.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/DummyGrabber.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/EntertainmentConfiguration.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/EntertainmentConfigurationSelector.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/HttpRequestUtils.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/HuenicornCore.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/ImageProcessing.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Interpolation.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/PlatformSelector.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/SetupBackend.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/Streamer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/TickSynchronizer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/UV.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/WebUIBackend.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/ApiTools.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Channel.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Color.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Config.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Credentials.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/CurlHttpClient.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Device.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/DtlsClient.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/DummyGrabber.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/EntertainmentConfiguration.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/EntertainmentConfigurationSelector.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/HttpRequestUtils.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/HuenicornCore.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/IGrabber.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/ImageProcessing.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Interpolation.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/IRestServer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Logger.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/PlatformSelector.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/SetupBackend.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Streamer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/TickSynchronizer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/TimingDefinitions.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/UV.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/WebUIBackend.hpp
 
-  include/Huenicorn/Version.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp
 )
 
 
@@ -146,26 +146,26 @@ endif(${BUILD_DOCUMENTATION})
 
 # Copy webroot to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
 
   # Then copy logo as favicon
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/assets/logo.svg $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot/favicon.svg
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/logo.svg $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot/favicon.svg
 )
 
 # Copy readme to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_SOURCE_DIR}/README.md $<TARGET_FILE_DIR:${PROJECT_NAME}>/README.md
+  ${CMAKE_CURRENT_SOURCE_DIR}/README.md $<TARGET_FILE_DIR:${PROJECT_NAME}>/README.md
 )
 
 # Copy screenshots to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_SOURCE_DIR}/screenshots $<TARGET_FILE_DIR:${PROJECT_NAME}>/screenshots
+  ${CMAKE_CURRENT_SOURCE_DIR}/screenshots $<TARGET_FILE_DIR:${PROJECT_NAME}>/screenshots
 )
 
 # Copy license to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_SOURCE_DIR}/LICENSE.txt $<TARGET_FILE_DIR:${PROJECT_NAME}>/LICENSE.txt
+  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt $<TARGET_FILE_DIR:${PROJECT_NAME}>/LICENSE.txt
 )
