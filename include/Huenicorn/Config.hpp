@@ -193,7 +193,7 @@ namespace Huenicorn
 
     // Attributes
     std::filesystem::path m_configFilePath;
-    int m_restServerPort{8080};
+    int m_restServerPort{8215};
     std::string m_boundBackendIP{"0.0.0.0"};
     std::optional<std::string> m_bridgeAddress;
     std::optional<Credentials> m_credentials;

@@ -97,7 +97,7 @@ namespace Huenicorn
   void WebUIBackend::_onStart()
   {
     std::stringstream ss;
-    ss << "Started web service on port " << m_app.port();
+    ss << "Huenicorn management panel is now available at http://localhost:" <<  m_app.port();
     Logger::log(ss.str());
 
     if(m_readyWebUIPromise.has_value()){

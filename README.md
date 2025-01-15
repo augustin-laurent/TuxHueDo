@@ -157,9 +157,9 @@ When running Huenicorn, make sure that the ```webroot``` directory is in the cwd
 ### Executing program
 
 * Run the executable named "huenicorn" in the way you prefer (Terminal if you want some text feedback)
-* Open your favorite web browser at [127.0.0.1:8080](http://127.0.0.1:8080)
+* Open your favorite web browser at [127.0.0.1:8215](http://127.0.0.1:8215)
 Browser will spawn automatically for the initial setup and as long as no light profile has been saved
-(Service port can be edited in configuration. Default is 8080)
+(Service port can be edited in configuration. Default is 8215)
 
 #### Initial setup
 
