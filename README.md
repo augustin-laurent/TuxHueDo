@@ -33,7 +33,7 @@ Huenicorn 1.0.9 is available.
 
 ### Requirements
 
-* Gnu/Linux system running with graphics sessions based on X.org or Wayland
+* Gnu/Linux system running with graphics sessions based on X11 or Wayland
 * Philips Hue bridge with registered lamps
 
 ### Dependencies
@@ -46,34 +46,39 @@ Huenicorn 1.0.9 is available.
 * [nlohmann-json](https://github.com/nlohmann/json)
 * [Curl](https://curl.se)
 
-
 #### Dependencies intallation
+
 <details>
 
 <summary>ArchLinux</summary>
 
 ```bash
-# In the unlikely case you don't have one of them already:
+# Required dependencies
+sudo pacman -S git cmake make gcc curl opencv mbedtls glm nlohmann-json
+yay -S crow
+
+# For X11 support
 sudo pacman -S xorg-server
-# And/or
+
+# For Wayland support
 sudo pacman -S wayland glib2 pipewire
-
-  # Mandatory
-  sudo pacman -S curl opencv mbedtls glm nlohmann-json
-
-  # Some more dependencies from AUR
-  yay -S crow
 ```
-</details>
 
+</details>
 
 <details>
 
 <summary>Fedora</summary>
 
 ```bash
-# Install dependencies
-sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel asio-devel curl-devel mbedtls-devel libXrandr-devel glm-devel glib2-devel pipewire-devel
+# Required dependencies
+sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel asio-devel curl-devel mbedtls-devel glm-devel
+
+# For X11 support
+sudo dnf install -y libXrandr-devel
+
+# For Wayland support
+sudo dnf install -y pipewire-devel glib2-devel
 
 # Crow
 # Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
@@ -81,12 +86,12 @@ sudo dnf install -y git cmake gcc gcc-c++ opencv-devel json-devel asio-devel cur
 sudo cp -r include/* /usr/local/include
 sudo cp -r lib/* /usr/local/lib
 ```
+
 </details>
 
-
 <details>
+
 <summary>OpenSUSE Tumbleweed</summary>
-<br/>
 
 These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to build and run Huenicorn:  
 
@@ -107,6 +112,7 @@ Follow the build instructions in their respective README files and copy them to 
 </details>
 
 <details>
+
 <summary>Ubuntu >= 22.04</summary>
 
 ```bash
@@ -114,15 +120,14 @@ Follow the build instructions in their respective README files and copy them to 
 sudo add-apt-repository universe
 sudo apt-get update
 
-# For X.Org support:
+# Required dependencies
+sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev libboost-all-dev
+
+# For X11 support
 sudo apt-get install libx11-dev libxext-dev libxrandr-dev
 
-# For Wayland support:
+# For Wayland support
 sudo apt-get install libglib2.0-dev libpipewire-0.3-dev wayland-utils
-
-
-# Mandatory libraries
-sudo apt-get install build-essential libopencv-dev libglm-dev libcurl4-openssl-dev nlohmann-json3-dev libmbedtls-dev libboost-all-dev
 
 # Crow .deb installer can be downloaded from deb on their repository: https://github.com/CrowCpp/Crow/releases/tag/v1.0+5
 sudo dpkg -i crow-v1.0+5.deb
@@ -135,7 +140,6 @@ sudo update-alternatives --set gcc /usr/bin/gcc-12
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 12
 sudo update-alternatives --set g++ /usr/bin/g++-12
 ```
-
 
 Earlier versions of Ubuntu are not officially supported. Please refer to [This post](https://gitlab.com/openjowelsofts/huenicorn/-/issues/5#note_1700387996) if you still want to give it a try.
 
@@ -217,6 +221,24 @@ The data structure of these files is JSON.
 * **restServerPort**:  (Unsigned) Port on which the web UI must respond
 * **subsampleWidth**:  (Unsigned) Width of the treated image subsample
 
+Here is an example
+
+```json
+{
+  "boundBackendIP": "0.0.0.0",
+  "bridgeAddress": "192.168.0.10",
+  "credentials": {
+    "clientkey": "01234567890ABCDEF0123456789ABCDE",
+    "username": "AbCdEfGhIjKlMnOpQrStUvWxYz-0123456789012"
+  },
+  "interpolation": 2,
+  "profileName": "profile",
+  "refreshRate": 60,
+  "restServerPort": 8215,
+  "subsampleWidth": 32
+}
+```
+
 #### profile.json
 
 This file contains a list of channels related to an entertainment configuration.
@@ -244,6 +266,36 @@ Huenicorn can be shut down through the web interface or by sending a termination
 
 ## Troubleshooting
 
+### My lights display raibow shift instead of my screen color
+
+#### Reason
+
+Huenicorn could not load any Grabber for the desktop session. It then loads the "Dummy grabber" to still allow access to the management panel and ensure bridge communication.
+
+#### Solution
+Check missing dependencies for the running session type
+
+If you are unsure of the current session type, enter the following command:
+```bash
+echo $XDG_SESSION_TYPE
+```
+
+Then refer to the dependencies installation section for your distro.
+
+The CMake output tells which Grabber is available for build:
+
+```
+cmake ..
+...
+[cmake] Able to build X11 Grabber !
+[cmake] Able to build Pipewire Grabber !
+...
+```
+
+Wayland requires the ```Pipewire``` Grabber.
+
+
+
 ### Crash after screen selection on Wayland session
 
 There is a known bug affecting Huenicorn depending on build parameters. This problem was "half-solved" since 1.0.9 but can somehow persist under certain circumstances.
@@ -262,6 +314,13 @@ make
 ```
 
 Then try running Huenicorn again to see if it can now go beyond screen selection.
+
+### Huenicorn still crashes immediately
+
+Check the ```~/.config/huenicorn/config.json``` file and check the following properties:
+
+```subsampleWidth``` : Must be higher than 0 and a divisor of your screen resolution.
+```refreshRate``` : Must be between 1 and your screen refresh rate
 
 ## Website
 
