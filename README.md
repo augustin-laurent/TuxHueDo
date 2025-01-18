@@ -20,12 +20,13 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.9 is available.
+Huenicorn 1.0.10 is available.
 
-### This revision brings:
-* Fix attempt for Wayland segfault
-  * A first step has been made to address this crash. It still not working for every distro but it's the best that could be done so far
-  * Disabling warning for Crow inclusion
+### This revision brings
+
+* Fix for memory leak inside HTTP request utils
+* New default port for web interface : 8215
+* Fix for color computation from PipewireGrabber
 
 ## Getting Started
 
@@ -327,9 +328,12 @@ Check the ```~/.config/huenicorn/config.json``` file and check the following pro
 Additionnal information and news can be found on [Huenicorn.org](http://huenicorn.org), the official website of the project.
 
 ## Version history
+
+* 1.0.10 (latest)
+  * Change default port, fix color computation, fix some minor bugs
 * 1.0.9
   * Small step forward for fixing wayland crash
-* 1.0.8 (Latest)
+* 1.0.8
   * Global code restructuration and logo integration
 * 1.0.7
   * Bug fixes for Wayland sessions
