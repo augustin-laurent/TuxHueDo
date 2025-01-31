@@ -56,11 +56,36 @@ class SetupUI
 
   autodetectBridgeCallback(data)
   {
+    let errorMessageNode = document.getElementById("bridgeAddressErrorMessage");
+
     if(data.succeeded){
-      document.getElementById("bridgeAddress").value = data.bridgeAddress;
+      let fieldNode = document.getElementById("bridgeAddress");
+      let multipleBridgeNode = document.getElementById("multipleBridgeSection");
+
+      if(data.bridges.length == 0){
+        errorMessageNode.style.visibility = "visible";
+        errorMessageNode.innerHTML = "Bridge could not be found";
+      }
+      else{
+        fieldNode.value = data.bridges[0].internalipaddress;
+
+        if(data.bridges.length > 1){
+          multipleBridgeNode.style.display = "block";
+
+          let bridgeCandidatesSelectNode = document.getElementById("bridgeCandidates");
+          bridgeCandidatesSelectNode.addEventListener("change", (event) => {fieldNode.value = (event.target.value);});
+
+          for(let bridge of data.bridges){
+            let newOption = bridgeCandidatesSelectNode.appendChild(document.createElement("option"));
+            newOption.innerHTML = `${bridge.internalipaddress}`;
+          }
+        }
+        else{
+          multipleBridgeNode.style.display = "none";
+        }
+      }
     }
     else{
-      let errorMessageNode = document.getElementById("bridgeAddressErrorMessage");
       errorMessageNode.style.visibility = "visible";
       errorMessageNode.innerHTML = data.error;
     }

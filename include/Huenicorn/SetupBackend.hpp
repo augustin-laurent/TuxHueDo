@@ -3,6 +3,9 @@
 #include <Huenicorn/IRestServer.hpp>
 
 #include <filesystem>
+#include <functional>
+
+#include <nlohmann/json.hpp>
 
 
 namespace Huenicorn
@@ -15,6 +18,8 @@ namespace Huenicorn
    */
   class SetupBackend : public IRestServer
   {
+    using Callback = std::function<void(const nlohmann::json& data, crow::response& res)>;
+
   public:
     // Constructor / destructor
     /**
@@ -103,6 +108,7 @@ namespace Huenicorn
     /**
      * @brief Handles a requests for a Hue bridge address validation
      * 
+     * @param req Pending HTTP request
      * @param res Pending HTTP response
      */
     void _validateBridgeAddress(const crow::request& req, crow::response& res);
@@ -126,6 +132,7 @@ namespace Huenicorn
 
 
     // Attributes
+    std::unordered_map<std::string, Callback> m_callbacks;
     HuenicornCore* m_huenicornCore;
     const std::filesystem::path m_webroot;
     std::unordered_map<std::string, std::string> m_contentTypes;

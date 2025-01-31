@@ -15,7 +15,7 @@ namespace Huenicorn
   }
 
 
-  nlohmann::json CurlHttpClient::sendRequest(const std::string& url, const std::string& method, const std::string& body, const Headers& headers)
+  std::optional<IHttpClient::Response> CurlHttpClient::sendRequest(const std::string& url, const std::string& method, const std::string& body, const Headers& headers)
   {
     auto handle = std::unique_ptr<CURL, CurlDeleter>(curl_easy_init());
     if(!handle){
@@ -53,29 +53,15 @@ namespace Huenicorn
     curl_easy_setopt(handle.get(), CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(handle.get(), CURLOPT_WRITEDATA, &responseString);
 
-    nlohmann::json jsonResponse = {};
-    try{
-      CURLcode code = curl_easy_perform(handle.get());
+    CURLcode code = curl_easy_perform(handle.get());
 
-      curl_easy_setopt(handle.get(), CURLOPT_HTTPHEADER, nullptr);
+    curl_easy_setopt(handle.get(), CURLOPT_HTTPHEADER, nullptr);
 
-      if(code != CURLE_OK){
-        Logger::error("HTTP request failed: " + std::string(curl_easy_strerror(code)));
-        jsonResponse["errors"] = {{"message", "Request failed"}};
-        return jsonResponse;
-      }
-
-      jsonResponse = nlohmann::json::parse(responseString);
-    }
-    catch(const nlohmann::json::exception& e){
-      jsonResponse["errors"] = {{"message", "Invalid JSON response"}};
-      Logger::error(e.what());
-    }
-    catch(const std::exception& e){
-      jsonResponse["errors"] = {{"message", "Unexpected error"}};
-      Logger::error("Unexpected exception: " + std::string(e.what()));
+    if(code != CURLE_OK){
+      Logger::error("HTTP request failed: " + std::string(curl_easy_strerror(code)));
+      return std::nullopt;
     }
 
-    return jsonResponse;
+    return Response(responseString);
   }
 }

@@ -1,19 +1,15 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
-#include <Huenicorn/IHttpClient.hpp>
+//#include <Huenicorn/IHttpClient.hpp>
 
-//#ifdef USE_CURL
-  #include <Huenicorn/CurlHttpClient.hpp>
-  namespace Huenicorn
-  {
-    using ClientImpl = CurlHttpClient;
-  }
-//#elif defined(USE_CURLPP)
-//#else
-//  #error "No HTTP client implementation defined"
-//#endif
+#include <Huenicorn/CurlHttpClient.hpp>
+namespace Huenicorn
+{
+  using ClientImpl = CurlHttpClient;
+}
 
 namespace Huenicorn
 {
@@ -22,7 +18,7 @@ namespace Huenicorn
   public:
     using Headers = IHttpClient::Headers;
 
-    static nlohmann::json sendRequest(const std::string& url, const std::string& method, const std::string& body = {}, const Headers& headers = {});
+    static std::optional<IHttpClient::Response> sendRequest(const std::string& url, const std::string& method, const std::string& body = {}, const Headers& headers = {});
 
   private:
     static ClientImpl& _ensureInit()

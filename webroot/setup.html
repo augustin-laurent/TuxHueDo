@@ -26,6 +26,13 @@
         <p><input type="text" id="bridgeAddress"/></p>
         <p id="bridgeAddressErrorMessage" class="errorMessage"></p>
         <p><button onclick="setupUI.autodetectBridge()">Auto-detect</button></p>
+
+        <div id="multipleBridgeSection" style="display: none">
+          <p>You seem to have multiple bridges.<br/>Please select one below (or input it manually above):</p>
+          
+          <p><select id="bridgeCandidates"></select></p>
+        </div>
+
         <button onclick="setupUI.validateAddress()">Validate</button>
         <button onclick="setupUI.abort()">Abort</button>
       </div>

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <map>
+#include <optional>
 
 #include <nlohmann/json.hpp>
 
@@ -16,6 +17,27 @@ namespace Huenicorn
   public:
     using Headers = std::multimap<std::string, std::string>;
 
+    class Response
+    {
+    public:
+      Response(const std::string& response):
+      m_response(response)
+      {}
+
+      const std::string& asString() const
+      {
+        return m_response;
+      }
+
+      const nlohmann::json asJson() const
+      {
+        return nlohmann::json::parse(m_response);
+      }
+
+    private:
+      const std::string m_response{};
+    };
+
     virtual ~IHttpClient(){}
 
     /**
@@ -27,7 +49,7 @@ namespace Huenicorn
      * @param headers HTTP request headers
      * @return nlohmann::json JSON response
      */
-    virtual nlohmann::json sendRequest(const std::string& url, const std::string& method, const std::string& body = "", const Headers& headers = {}) = 0;
+    virtual std::optional<Response> sendRequest(const std::string& url, const std::string& method, const std::string& body = "", const Headers& headers = {}) = 0;
   };
 }
 

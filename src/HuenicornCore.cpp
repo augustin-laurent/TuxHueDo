@@ -105,21 +105,15 @@ namespace Huenicorn
 
   nlohmann::json HuenicornCore::autodetectedBridge() const
   {
-    std::string bridgeAddress;
-    try{
-      auto detectedBridgeData = HttpRequestUtils::sendRequest("https://discovery.meethue.com/", "GET");
+    auto detectedBridgeResponse = HttpRequestUtils::sendRequest("https://discovery.meethue.com/", "GET");
 
-      if(detectedBridgeData.size() < 1){
-        return {{"succeeded", false}, {"error", "Could not autodetect bridge."}};
-      }
-
-      bridgeAddress = detectedBridgeData.front().at("internalipaddress");
-    }
-    catch(const nlohmann::json::exception& e){
-      return {{"succeeded", false}, {"error", "Could not autodetect bridge."}};
+    if(!detectedBridgeResponse.has_value()){
+      return {{"succeeded", false}, {"error", "Could not reach discovery service. Please check your internet connection."}};
     }
 
-    return {{"succeeded", bridgeAddress != ""}, {"bridgeAddress", bridgeAddress}};
+    auto bridges = detectedBridgeResponse.value().asJson();
+
+    return {{"succeeded", true}, {"bridges", bridges}};
   }
 
 
@@ -131,15 +125,17 @@ namespace Huenicorn
     nlohmann::json request = {{"devicetype", deviceType}, {"generateclientkey", true}};
     auto response = HttpRequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api", "POST", request.dump());
 
-    if(response.size() < 1){
+    if(!response.has_value()){
       return {{"succeeded", false}, {"error", "unreachable bridge"}};
     }
 
-    if(response.at(0).contains("error")){
-      return {{"succeeded", false}, {"error", response.at(0).at("error").at("description")}};
+    auto jsonResponse = response.value().asJson();
+
+    if(jsonResponse.at(0).contains("error")){
+      return {{"succeeded", false}, {"error", jsonResponse.at(0).at("error").at("description")}};
     }
 
-    auto credentials = response.at(0).at("success").get<Credentials>();
+    auto credentials = jsonResponse.at(0).at("success").get<Credentials>();
     m_config.setCredentials(credentials);
 
     return {{"succeeded", true}, {"username", credentials.username()}, {"clientkey", credentials.clientkey()}};
@@ -240,23 +236,18 @@ namespace Huenicorn
 
   bool HuenicornCore::validateBridgeAddress(const std::string& bridgeAddress)
   {
-    try{
-      std::string sanitizedAddress = bridgeAddress;
-      while (sanitizedAddress.back() == '/'){
-        sanitizedAddress.pop_back();
-      }
+    std::string sanitizedAddress = bridgeAddress;
 
-      auto response = HttpRequestUtils::sendRequest(sanitizedAddress + "/api", "GET", "");
-      if(response.size() == 0){
-        return false;
-      }
-
-      m_config.setBridgeAddress(sanitizedAddress);
+    while(sanitizedAddress.back() == '/'){
+      sanitizedAddress.pop_back();
     }
-    catch(const nlohmann::json::exception& exception){
-      Logger::error(exception.what());
+
+    auto response = HttpRequestUtils::sendRequest(sanitizedAddress + "/api", "GET", "");
+    if(!response.has_value()){
       return false;
     }
+
+    m_config.setBridgeAddress(sanitizedAddress);
 
     return true;
   }
@@ -264,25 +255,25 @@ namespace Huenicorn
 
   bool HuenicornCore::validateCredentials(const Credentials& credentials)
   {
-    try{
-      auto response = HttpRequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api/" + credentials.username(), "GET", "");
-      if(response.size() == 0){
-        return false;
-      }
-
-      if(response.is_array() && response.at(0).contains("error")){
-        return false;
-      }
-
-      m_config.setCredentials(credentials);
-
-      Logger::log("Successfully registered credentials");
-    }
-    catch(const nlohmann::json::exception& exception){
-      Logger::error(exception.what());
+    auto response = HttpRequestUtils::sendRequest(m_config.bridgeAddress().value() + "/api/" + credentials.username(), "GET", "");
+    if(!response.has_value()){
       return false;
     }
 
+    try{
+      auto jsonResponse = response.value().asJson();
+
+      if(jsonResponse.is_array() && jsonResponse.at(0).contains("error")){
+        return false;
+      }
+    }
+    catch(const std::exception& e){
+      Logger::error(e.what());
+      return false;
+    }
+
+    m_config.setCredentials(credentials);
+    Logger::log("Successfully registered credentials");
     return true;
   }
 
