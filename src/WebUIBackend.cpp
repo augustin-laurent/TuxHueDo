@@ -12,7 +12,7 @@
 namespace Huenicorn
 {
   WebUIBackend::WebUIBackend(HuenicornCore* huenicornCore):
-  IRestServer("webroot", "index.html"),
+  IRestServer("index.html"),
   m_huenicornCore(huenicornCore)
   {
     CROW_ROUTE(m_app, "/api/webUIStatus").methods(crow::HTTPMethod::GET)

@@ -1,0 +1,15 @@
+#pragma once
+
+#include <unordered_map>
+#include <string>
+#include <filesystem>
+
+namespace Huenicorn
+{
+  namespace Webroot
+  {
+    static const std::unordered_map<std::filesystem::path, std::string> embeddedFiles = {
+@EMBEDDED_FILES_CONTENT@
+    };
+  }
+}

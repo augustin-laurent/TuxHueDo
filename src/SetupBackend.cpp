@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 namespace Huenicorn
 {
   SetupBackend::SetupBackend(HuenicornCore* huenicornCore):
-  IRestServer("webroot", "setup.html"),
+  IRestServer("setup.html"),
   m_huenicornCore(huenicornCore)
   {
     CROW_ROUTE(m_app, "/api/finishSetup").methods(crow::HTTPMethod::POST)

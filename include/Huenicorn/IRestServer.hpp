@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
-#include <optional>
 #include <unordered_set>
 
 #pragma GCC diagnostic push
@@ -11,6 +10,7 @@
 #include <crow.h>
 #pragma GCC diagnostic pop
 
+#include <Huenicorn/EmbeddedWebrootFiles.hpp>
 
 namespace Huenicorn
 {
@@ -25,10 +25,9 @@ namespace Huenicorn
     /**
      * @brief IRestServer constructor
      * 
-     * @param webRoot Path to the web root directory
+     * @param indexFile Default file to show
      */
-    IRestServer(const std::filesystem::path& webRoot, const std::string& indexFile = "index.html"):
-    m_webroot(webRoot),
+    IRestServer(const std::string& indexFile = "index.html"):
     m_indexFile(indexFile)
     {
       m_contentTypes = {
@@ -186,39 +185,27 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP connection
      */
-    void _getWebFile(const std::string& fileName, crow::response& res) const
+    void _getWebFile(const std::string& filePath, crow::response& res) const
     {
-      std::filesystem::path webFileName = fileName;
-      if(webFileName == ""){
-        webFileName = m_indexFile;
+      std::filesystem::path webFilePath = filePath;
+      if(webFilePath == ""){
+        webFilePath = m_indexFile;
       }
 
-      std::filesystem::path webFileFullPath = m_webroot / webFileName;
+      std::filesystem::path webFileFullPath = webFilePath;
 
-      if(!std::filesystem::exists(m_webroot)){
-        std::string response = "<h1>Error : Could not locate webroot</h1><p>Make sure that the webroot directory figures in the current working directory</p>";
-        std::string contentType = "text/html";
-
-        res.set_header("Content-Type", contentType);
-        res.write(response);
-        res.end();
-        return;
+      if(Webroot::embeddedFiles.find(webFileFullPath) == Webroot::embeddedFiles.end() || m_webfileBlackList.contains(webFilePath)){
+        webFileFullPath = "404.html";
       }
 
-      if(!std::filesystem::exists(webFileFullPath) || m_webfileBlackList.contains(webFileName)){
-        webFileName = "404.html";
-        webFileFullPath = m_webroot / webFileName;
-      }
-
-      std::string extension = webFileName.extension();
+      std::string extension = webFilePath.extension();
       std::string contentType = "text/plain";
 
       if(m_contentTypes.find(extension) != m_contentTypes.end()){
         contentType = m_contentTypes.at(extension);
       }
 
-      std::ifstream webFile(webFileFullPath);
-      std::string response = std::string(std::istreambuf_iterator<char>(webFile), std::istreambuf_iterator<char>());
+      std::string response = Webroot::embeddedFiles.at(webFilePath);
 
       res.set_header("Content-Type", contentType);
       res.write(response);
@@ -227,7 +214,6 @@ namespace Huenicorn
 
 
     // Attributes
-    const std::filesystem::path m_webroot;
     std::string m_indexFile;
     bool m_running{false};
     crow::SimpleApp m_app;

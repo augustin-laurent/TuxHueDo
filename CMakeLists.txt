@@ -145,12 +145,48 @@ endif(${BUILD_DOCUMENTATION})
 
 
 # Copy webroot to build
+#[[ NOT ANYMORE :3
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
 
   # Then copy logo as favicon
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/logo.svg $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot/favicon.svg
 )
+]]
+
+# TODO : ADD MISSING LOGO TO EMBEDED WEBROOT !!
+
+file(GLOB_RECURSE WEB_FILES "${CMAKE_SOURCE_DIR}/webroot/*")
+
+set(EMBEDDED_FILES_CONTENT "")
+
+foreach(DATA_FILE ${WEB_FILES})
+    get_filename_component(KEY ${DATA_FILE} NAME)
+    file(READ ${DATA_FILE} CONTENTS)
+
+    # Escape special characters
+    string(REPLACE "\\" "\\\\" CONTENTS "${CONTENTS}")
+    string(REPLACE "\"" "\\\"" CONTENTS "${CONTENTS}")
+    string(REPLACE "\n" "\\n" CONTENTS "${CONTENTS}")
+
+    string(APPEND EMBEDDED_FILES_CONTENT "      {\"${KEY}\", \"${CONTENTS}\"},\n")
+endforeach()
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
+  ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp
+  #@ONLY
+)
+
+# Ensure the header is available
+add_custom_target(generate_webroot_header DEPENDS ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp)
+
+# Ensure the main project depends on the generated header
+add_dependencies(${PROJECT_NAME} generate_webroot_header)
+
+# Include the generated header
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include/Huenicorn)
+
 
 # Copy readme to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
