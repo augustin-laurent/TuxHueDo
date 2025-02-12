@@ -2,11 +2,10 @@
 #include <memory>
 #include <csignal>
 
+#include <Huenicorn/Version.hpp>
 #include <Huenicorn/HuenicornCore.hpp>
 #include <Huenicorn/Logger.hpp>
 #include <Huenicorn/PlatformSelector.hpp>
-
-#include <Huenicorn/Version.hpp>
 
 
 /**
@@ -18,7 +17,7 @@ class Application
 public:
   void start()
   {
-    m_core = std::make_unique<Huenicorn::HuenicornCore>(PROJECT_VERSION, Huenicorn::platformAdapter.getConfigFilePath());
+    m_core = std::make_unique<Huenicorn::HuenicornCore>(Huenicorn::Version, Huenicorn::platformAdapter.getConfigFilePath());
     m_applicationThread.emplace([&](){
       m_core->start();
     });
@@ -59,7 +58,7 @@ void signalHandler(int signal)
 
 int main()
 {
-  Huenicorn::Logger::log("Starting Huenicorn version ", PROJECT_VERSION);
+  Huenicorn::Logger::log("Starting Huenicorn version ", Huenicorn::Version);
 
   signal(SIGTERM, signalHandler);
   signal(SIGINT, signalHandler);
