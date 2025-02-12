@@ -8,7 +8,7 @@ namespace Huenicorn
 {
   namespace Webroot
   {
-    static const std::unordered_map<std::filesystem::path, std::string> embeddedFiles = {
+    inline const std::unordered_map<std::filesystem::path, std::string> embeddedFiles = {
 @EMBEDDED_FILES_CONTENT@
     };
   }

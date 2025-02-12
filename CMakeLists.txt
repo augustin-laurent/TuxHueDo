@@ -144,23 +144,11 @@ if(${BUILD_DOCUMENTATION})
 endif(${BUILD_DOCUMENTATION})
 
 
-# Copy webroot to build
-#[[ NOT ANYMORE :3
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/webroot $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot
+function(embed_directory TARGET_DIR)
+  file(GLOB_RECURSE WEB_FILES "${TARGET_DIR}/*")
+  set(CONCAT_CONTENT "")
 
-  # Then copy logo as favicon
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/logo.svg $<TARGET_FILE_DIR:${PROJECT_NAME}>/webroot/favicon.svg
-)
-]]
-
-# TODO : ADD MISSING LOGO TO EMBEDED WEBROOT !!
-
-file(GLOB_RECURSE WEB_FILES "${CMAKE_SOURCE_DIR}/webroot/*")
-
-set(EMBEDDED_FILES_CONTENT "")
-
-foreach(DATA_FILE ${WEB_FILES})
+  foreach(DATA_FILE ${WEB_FILES})
     get_filename_component(KEY ${DATA_FILE} NAME)
     file(READ ${DATA_FILE} CONTENTS)
 
@@ -169,14 +157,21 @@ foreach(DATA_FILE ${WEB_FILES})
     string(REPLACE "\"" "\\\"" CONTENTS "${CONTENTS}")
     string(REPLACE "\n" "\\n" CONTENTS "${CONTENTS}")
 
-    string(APPEND EMBEDDED_FILES_CONTENT "      {\"${KEY}\", \"${CONTENTS}\"},\n")
-endforeach()
+    set(KEY_VALUE "      {\"${KEY}\", \"${CONTENTS}\"},\n")
+    set(CONCAT_CONTENT "${CONCAT_CONTENT}${KEY_VALUE}")
+  endforeach()
+  set(EMBEDDED_FILES_CONTENT "${EMBEDDED_FILES_CONTENT}${CONCAT_CONTENT}" PARENT_SCOPE)
+endfunction()
+
+set(EMBEDDED_FILES_CONTENT "")
+embed_directory("${CMAKE_SOURCE_DIR}/webroot")
+embed_directory("${CMAKE_SOURCE_DIR}/assets")
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
   ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp
-  #@ONLY
 )
+
 
 # Ensure the header is available
 add_custom_target(generate_webroot_header DEPENDS ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp)
@@ -198,6 +193,12 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
   ${CMAKE_CURRENT_SOURCE_DIR}/screenshots $<TARGET_FILE_DIR:${PROJECT_NAME}>/screenshots
+)
+
+# Copy assets to build
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
 )
 
 # Copy license to build
