@@ -20,11 +20,63 @@ find_library(MBEDTLS_LIBS mbedtls REQUIRED)
 find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
 
+
+# Generate version header
+set(VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp")
+
+add_custom_target(generate_version_header DEPENDS ${VERSION_HEADER})
+
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/config/Version.hpp.in
-  ${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp
+  ${VERSION_HEADER}
 )
 
+# Generate embedded webroot header
+function(embed_directory TARGET_DIR)
+  file(GLOB_RECURSE WEB_FILES "${TARGET_DIR}/*")
+  set(CONCAT_CONTENT "")
+
+  foreach(DATA_FILE ${WEB_FILES})
+    get_filename_component(KEY ${DATA_FILE} NAME)
+    file(READ ${DATA_FILE} CONTENTS)
+
+    # Escape special characters
+    string(REPLACE "\\" "\\\\" CONTENTS "${CONTENTS}")
+    string(REPLACE "\"" "\\\"" CONTENTS "${CONTENTS}")
+    string(REPLACE "\n" "\\n" CONTENTS "${CONTENTS}")
+
+    set(KEY_VALUE "      {\"${KEY}\", \"${CONTENTS}\"},\n")
+    set(CONCAT_CONTENT "${CONCAT_CONTENT}${KEY_VALUE}")
+  endforeach()
+  set(EMBEDDED_FILES_CONTENT "${EMBEDDED_FILES_CONTENT}${CONCAT_CONTENT}" PARENT_SCOPE)
+endfunction()
+
+set(EMBEDDED_FILES_CONTENT "")
+embed_directory("${CMAKE_SOURCE_DIR}/webroot")
+embed_directory("${CMAKE_SOURCE_DIR}/assets")
+
+
+set(EMBEDDED_WEBROOT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp")
+
+
+# Custom command to ensure re-running when files change
+add_custom_command(
+  OUTPUT ${EMBEDDED_WEBROOT_HEADER}
+  COMMAND ${CMAKE_COMMAND} -E echo "Regenerating embedded webroot header..."
+  COMMAND ${CMAKE_COMMAND} -E touch ${EMBEDDED_WEBROOT_HEADER}  # Ensures file gets updated
+  DEPENDS ${WEBROOT_FILES} ${ASSETS_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
+  COMMENT "Updating EmbeddedWebrootFiles.hpp because webroot or assets changed."
+)
+
+
+add_custom_target(generate_webroot_header DEPENDS ${EMBEDDED_WEBROOT_HEADER})
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
+  ${EMBEDDED_WEBROOT_HEADER}
+)
+
+# Declare executable
 add_executable(${BINARY_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ApiTools.cpp
@@ -74,9 +126,11 @@ add_executable(${BINARY_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/UV.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/WebUIBackend.hpp
 
-  ${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp
+  ${VERSION_HEADER}
+  ${EMBEDDED_WEBROOT_HEADER}
 )
 
+add_dependencies(${PROJECT_NAME} generate_version_header generate_webroot_header)
 
 if(UNIX AND NOT APPLE) # For Gnu/Linux
   include(cmake/platforms/GnuLinux.cmake)
@@ -144,44 +198,7 @@ if(${BUILD_DOCUMENTATION})
 endif(${BUILD_DOCUMENTATION})
 
 
-function(embed_directory TARGET_DIR)
-  file(GLOB_RECURSE WEB_FILES "${TARGET_DIR}/*")
-  set(CONCAT_CONTENT "")
-
-  foreach(DATA_FILE ${WEB_FILES})
-    get_filename_component(KEY ${DATA_FILE} NAME)
-    file(READ ${DATA_FILE} CONTENTS)
-
-    # Escape special characters
-    string(REPLACE "\\" "\\\\" CONTENTS "${CONTENTS}")
-    string(REPLACE "\"" "\\\"" CONTENTS "${CONTENTS}")
-    string(REPLACE "\n" "\\n" CONTENTS "${CONTENTS}")
-
-    set(KEY_VALUE "      {\"${KEY}\", \"${CONTENTS}\"},\n")
-    set(CONCAT_CONTENT "${CONCAT_CONTENT}${KEY_VALUE}")
-  endforeach()
-  set(EMBEDDED_FILES_CONTENT "${EMBEDDED_FILES_CONTENT}${CONCAT_CONTENT}" PARENT_SCOPE)
-endfunction()
-
-set(EMBEDDED_FILES_CONTENT "")
-embed_directory("${CMAKE_SOURCE_DIR}/webroot")
-embed_directory("${CMAKE_SOURCE_DIR}/assets")
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
-  ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp
-)
-
-
-# Ensure the header is available
-add_custom_target(generate_webroot_header DEPENDS ${CMAKE_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp)
-
-# Ensure the main project depends on the generated header
-add_dependencies(${PROJECT_NAME} generate_webroot_header)
-
-# Include the generated header
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include/Huenicorn)
-
+# Post build commands
 
 # Copy readme to build
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
