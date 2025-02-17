@@ -267,6 +267,18 @@ Huenicorn can be shut down through the web interface or by sending a termination
 
 ## Troubleshooting
 
+### I can't see/select any entertainment area from the web interface
+
+This can happens if the credentials are invalidated for various reasons and can usually be fixed following these steps:
+
+* Shutdown Huenicorn if running
+* Remove (or rename) the ```~/.config/huenicorn/config.json``` file
+* Restart Huenicorn
+* Redo the initial setup and at the credentials step, press the "I don't have credentials yet" button
+* Follow the instructions involving pressing the bridge's physical button and finish the setup
+
+Huenicorn should now be able to properly list Entertainment Areas and stream colors
+
 ### My lights display raibow shift instead of my screen color
 
 #### Reason
@@ -274,9 +286,11 @@ Huenicorn can be shut down through the web interface or by sending a termination
 Huenicorn could not load any Grabber for the desktop session. It then loads the "Dummy grabber" to still allow access to the management panel and ensure bridge communication.
 
 #### Solution
+
 Check missing dependencies for the running session type
 
 If you are unsure of the current session type, enter the following command:
+
 ```bash
 echo $XDG_SESSION_TYPE
 ```
@@ -285,7 +299,7 @@ Then refer to the dependencies installation section for your distro.
 
 The CMake output tells which Grabber is available for build:
 
-```
+```cmake
 cmake ..
 ...
 [cmake] Able to build X11 Grabber !
@@ -295,8 +309,6 @@ cmake ..
 
 Wayland requires the ```Pipewire``` Grabber.
 
-
-
 ### Crash after screen selection on Wayland session
 
 There is a known bug affecting Huenicorn depending on build parameters. This problem was "half-solved" since 1.0.9 but can somehow persist under certain circumstances.
@@ -304,12 +316,13 @@ There is a known bug affecting Huenicorn depending on build parameters. This pro
 Huenicorn can then be rebuilt with different optimisation flags to hopefully result in a functional result.
 
 Replace ```<CMakeBuildType>``` with on of the values below:
-- Release
-- MinSizeRel
-- Debug
-- RelWithDebInfo
 
-```
+* Release
+* MinSizeRel
+* Debug
+* RelWithDebInfo
+
+```bash
 cmake -DCMAKE_BUILD_TYPE=<CMakeBuildType> -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ..
 make
 ```
