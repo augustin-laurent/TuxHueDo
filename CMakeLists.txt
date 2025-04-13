@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.0)
 set(PROJECT_NAME huenicorn)
 set(BINARY_NAME huenicorn)
 
-project(${PROJECT_NAME} VERSION 1.0.10)
+project(${PROJECT_NAME} VERSION 1.0.11)
 
 
 set(BUILD_DOCUMENTATION FALSE CACHE BOOL "Build documentation")

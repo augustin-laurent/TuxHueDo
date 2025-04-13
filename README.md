@@ -20,13 +20,12 @@ Huenicorn provides a simple web interface to assign specific portions of screen 
 
 ## Project status
 
-Huenicorn 1.0.10 is available.
+Huenicorn 1.0.11 is available.
 
 ### This revision brings
 
-* Fix for memory leak inside HTTP request utils
-* New default port for web interface : 8215
-* Fix for color computation from PipewireGrabber
+* Webroot files are now embeded to binary to make installation easier
+* Initial setup now allows to select between multiple bridges if detected
 
 ## Getting Started
 
@@ -99,6 +98,9 @@ These dependencies needed to be installed on OpenSUSE Tumbleweed 20231011 to bui
 ```bash
 sudo zypper install opencv-devel libopencv408 python311-jsonschema asio-devel glm-devel nlohmann_json-devel
 
+# For Wayland support
+sudo zypper install pipewire-devel glib2-devel
+
 # Crow
 # Download the zip available at : https://github.com/CrowCpp/Crow/releases/tag/v1.1.0
 # Extract the archive and copy its content to the target directories:
@@ -107,7 +109,7 @@ sudo cp -r lib/* /usr/local/lib
 
 ```
 
-Additionally you have to build Mbed-TLS from source from the links above.   
+Additionally you have to build Mbed-TLS from source from the links above.
 Follow the build instructions in their respective README files and copy them to the appropriate place, as some of them don't do that automatically (usually /usr/local/lib64/ for libraries (check LD_LIBRARY_PATH) or /usr/local/include/ for includes)
 
 </details>
@@ -313,19 +315,24 @@ Wayland requires the ```Pipewire``` Grabber.
 
 There is a known bug affecting Huenicorn depending on build parameters. This problem was "half-solved" since 1.0.9 but can somehow persist under certain circumstances.
 
-Huenicorn can then be rebuilt with different optimisation flags to hopefully result in a functional result.
+Huenicorn can then be rebuilt with different optimisation flags to hopefully end with a functional result.
 
-Replace ```<CMakeBuildType>``` with on of the values below:
+Clear the content of the ```build``` directory (if it exists).
 
-* Release
-* MinSizeRel
-* Debug
-* RelWithDebInfo
+Reconfigure the project with the following line instead of ~~```cmake ..```~~
+
 
 ```bash
 cmake -DCMAKE_BUILD_TYPE=<CMakeBuildType> -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ..
 make
 ```
+
+```<CMakeBuildType>``` has to be replaced with one of the values below:
+
+* Release
+* MinSizeRel
+* Debug
+* RelWithDebInfo
 
 Then try running Huenicorn again to see if it can now go beyond screen selection.
 
@@ -342,7 +349,9 @@ Additionnal information and news can be found on [Huenicorn.org](http://huenicor
 
 ## Version history
 
-* 1.0.10 (latest)
+* 1.0.11 (latest)
+  * Embed webroot into binary, handle multiple bridges at setup
+* 1.0.10
   * Change default port, fix color computation, fix some minor bugs
 * 1.0.9
   * Small step forward for fixing wayland crash
