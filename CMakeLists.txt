@@ -123,7 +123,7 @@ if(BUILD_QT)
 endif()
 
 # ============================================================================
-# GTK4 Frontend (placeholder)
+# GTK4 Frontend
 # ============================================================================
 
 if(BUILD_GTK)
@@ -132,9 +132,14 @@ if(BUILD_GTK)
 
   add_executable(huenicorn-gtk
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/AppState.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/MainWindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/ScreenPartitionWidget.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/SettingsDialog.cpp
   )
 
   target_include_directories(huenicorn-gtk PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk
     ${GTK4_INCLUDE_DIRS}
     ${ADWAITA_INCLUDE_DIRS}
   )
