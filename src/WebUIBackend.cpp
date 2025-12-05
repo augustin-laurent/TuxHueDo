@@ -15,80 +15,99 @@ namespace Huenicorn
   IRestServer("index.html"),
   m_huenicornCore(huenicornCore)
   {
-    CROW_ROUTE(m_app, "/api/webUIStatus").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/webUIStatus",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _getWebUIStatus(res);
     });
 
-    CROW_ROUTE(m_app, "/api/entertainmentConfigurations").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/entertainmentConfigurations",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _getEntertainmentConfigurations(res);
     });
 
-    CROW_ROUTE(m_app, "/api/channel/<int>").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res, int channelId){
+    m_server.Get(R"(/api/channel/(\d+))",
+    [this](const httplib::Request& req, httplib::Response& res){
+      int channelId = std::stoi(req.matches[1]);
       _getChannel(res, channelId);
     });
 
-    CROW_ROUTE(m_app, "/api/channels").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/channels",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _getChannels(res);
     });
 
-    CROW_ROUTE(m_app, "/api/displayInfo").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/displayInfo",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _getDisplayInfo(res);
     });
 
-    CROW_ROUTE(m_app, "/api/interpolationInfo").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/interpolationInfo",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _getInterpolationInfo(res);
     });
 
-    CROW_ROUTE(m_app, "/api/setEntertainmentConfiguration").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/setEntertainmentConfiguration",
+    [this](const httplib::Request& req, httplib::Response& res){
       _setEntertainmentConfiguration(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/setChannelUV/<int>").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res, int channelId){
+    m_server.Put(R"(/api/setChannelUV/(\d+))",
+    [this](const httplib::Request& req, httplib::Response& res){
+      int channelId = std::stoi(req.matches[1]);
       _setChannelUV(req, res, channelId);
     });
 
-    CROW_ROUTE(m_app, "/api/setChannelGammaFactor/<int>").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res, int channelId){
+    m_server.Put(R"(/api/setChannelGammaFactor/(\d+))",
+    [this](const httplib::Request& req, httplib::Response& res){
+      int channelId = std::stoi(req.matches[1]);
       _setChannelGammaFactor(req, res, channelId);
     });
 
-    CROW_ROUTE(m_app, "/api/setSubsampleWidth").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/setSubsampleWidth",
+    [this](const httplib::Request& req, httplib::Response& res){
       _setSubsampleWidth(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/setRefreshRate").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/setRefreshRate",
+    [this](const httplib::Request& req, httplib::Response& res){
       _setRefreshRate(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/setInterpolation").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/setInterpolation",
+    [this](const httplib::Request& req, httplib::Response& res){
       _setInterpolation(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/setChannelActivity/<int>").methods(crow::HTTPMethod::POST)
-    ([this](const crow::request& req, crow::response& res, int channelId){
+    m_server.Post(R"(/api/setChannelActivity/(\d+))",
+    [this](const httplib::Request& req, httplib::Response& res){
+      int channelId = std::stoi(req.matches[1]);
       _setChannelActivity(req, res, channelId);
     });
 
-    CROW_ROUTE(m_app, "/api/saveProfile").methods(crow::HTTPMethod::POST)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Post("/api/saveProfile",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _saveProfile(res);
     });
 
-    CROW_ROUTE(m_app, "/api/stop").methods(crow::HTTPMethod::POST)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Post("/api/stop",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _stop(res);
     });
+
+    // Register static files
+    _registerStaticFile("index.html");
+    _registerStaticFile("setup.html");
+    _registerStaticFile("404.html");
+    _registerStaticFile("style.css");
+    _registerStaticFile("Channel.js");
+    _registerStaticFile("Rainbow.js");
+    _registerStaticFile("ScreenWidget.js");
+    _registerStaticFile("Utils.js");
+    _registerStaticFile("Version.js");
+    _registerStaticFile("WebUI.js");
+    _registerStaticFile("mainSetup.js");
+    _registerStaticFile("mainWebUI.js");
+    _registerStaticFile("logo.svg");
 
     m_webfileBlackList.insert("setup.html");
   }
@@ -97,7 +116,7 @@ namespace Huenicorn
   void WebUIBackend::_onStart()
   {
     std::stringstream ss;
-    ss << "Huenicorn management panel is now available at http://localhost:" <<  m_app.port();
+    ss << "Huenicorn management panel is now available at http://localhost:" << port();
     Logger::log(ss.str());
 
     if(m_readyWebUIPromise.has_value()){
@@ -106,33 +125,29 @@ namespace Huenicorn
   }
 
 
-  void WebUIBackend::_getVersion(crow::response& res) const
+  void WebUIBackend::_getVersion(httplib::Response& res) const
   {
     nlohmann::json jsonResponse = {
       {"version", m_huenicornCore->version()},
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getWebUIStatus(crow::response& res) const
+  void WebUIBackend::_getWebUIStatus(httplib::Response& res) const
   {
     nlohmann::json jsonResponse = {
       {"ready", true},
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getEntertainmentConfigurations(crow::response& res) const
+  void WebUIBackend::_getEntertainmentConfigurations(httplib::Response& res) const
   {
     auto entertainmentConfigurations = nlohmann::json(m_huenicornCore->entertainmentConfigurations());
     std::string currentEntertainmentConfigurationId = m_huenicornCore->currentEntertainmentConfigurationId().value();
@@ -143,32 +158,26 @@ namespace Huenicorn
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getChannel(crow::response& res, uint8_t channelId) const
+  void WebUIBackend::_getChannel(httplib::Response& res, uint8_t channelId) const
   {
     std::string response = nlohmann::json(m_huenicornCore->channels().at(channelId)).dump();
 
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getChannels(crow::response& res) const
+  void WebUIBackend::_getChannels(httplib::Response& res) const
   {
     std::string response = nlohmann::json(m_huenicornCore->channels()).dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getDisplayInfo(crow::response& res) const
+  void WebUIBackend::_getDisplayInfo(httplib::Response& res) const
   {
     auto displayResolution = m_huenicornCore->displayResolution();
 
@@ -190,13 +199,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonDisplayInfo.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_getInterpolationInfo(crow::response& res) const
+  void WebUIBackend::_getInterpolationInfo(httplib::Response& res) const
   {
     nlohmann::json jsonAvailableInterpolations = nlohmann::json::array();
     for(const auto& [key, value] : m_huenicornCore->availableInterpolations()){
@@ -211,13 +218,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonInterpolationInfo.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setEntertainmentConfiguration(const crow::request& req, crow::response& res) const
+  void WebUIBackend::_setEntertainmentConfiguration(const httplib::Request& req, httplib::Response& res) const
   {
     const std::string& data = req.body;
     std::string entertainmentConfigurationId = nlohmann::json::parse(data);
@@ -231,13 +236,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setChannelUV(const crow::request& req, crow::response& res, uint8_t channelId) const
+  void WebUIBackend::_setChannelUV(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const
   {
     const std::string& data = req.body;
     nlohmann::json jsonUV = nlohmann::json::parse(data);
@@ -255,13 +258,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setChannelGammaFactor(const crow::request& req, crow::response& res, uint8_t channelId) const
+  void WebUIBackend::_setChannelGammaFactor(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const
   {
     const std::string& data = req.body;
     nlohmann::json jsonGammaFactorData = nlohmann::json::parse(data);
@@ -273,9 +274,7 @@ namespace Huenicorn
         {"error", "invalid channel id"}
       }.dump();
       
-      res.set_header("Content-Type", "application/json");
-      res.write(response);
-      res.end();
+      res.set_content(response, "application/json");
       return;
     }
 
@@ -285,13 +284,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setSubsampleWidth(const crow::request& req, crow::response& res) const
+  void WebUIBackend::_setSubsampleWidth(const httplib::Request& req, httplib::Response& res) const
   {
     const std::string& data = req.body;
     int subsampleWidth = nlohmann::json::parse(data).get<int>();
@@ -305,13 +302,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonDisplay.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setRefreshRate(const crow::request& req, crow::response& res) const
+  void WebUIBackend::_setRefreshRate(const httplib::Request& req, httplib::Response& res) const
   {
     const std::string& data = req.body;
     unsigned refreshRate = nlohmann::json::parse(data).get<unsigned>();
@@ -322,13 +317,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonRefreshRate.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setInterpolation(const crow::request& req, crow::response& res) const
+  void WebUIBackend::_setInterpolation(const httplib::Request& req, httplib::Response& res) const
   {
     const std::string& data = req.body;
     unsigned interpolation = nlohmann::json::parse(data).get<unsigned>();
@@ -340,13 +333,11 @@ namespace Huenicorn
     };
 
     std::string response = jsonInterpolation.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_setChannelActivity(const crow::request& req, crow::response& res, uint8_t channelId) const
+  void WebUIBackend::_setChannelActivity(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const
   {
     const std::string& data = req.body;
     nlohmann::json jsonChannelData = nlohmann::json::parse(data);
@@ -358,9 +349,7 @@ namespace Huenicorn
         {"error", "invalid channel id"}
       }.dump();
       
-      res.set_header("Content-Type", "application/json");
-      res.write(response);
-      res.end();
+      res.set_content(response, "application/json");
       return;
     }
 
@@ -374,13 +363,11 @@ namespace Huenicorn
     }
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_saveProfile(crow::response& res) const
+  void WebUIBackend::_saveProfile(httplib::Response& res) const
   {
     m_huenicornCore->saveProfile();
 
@@ -389,22 +376,18 @@ namespace Huenicorn
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void WebUIBackend::_stop(crow::response& res) const
+  void WebUIBackend::_stop(httplib::Response& res) const
   {
     nlohmann::json jsonResponse = {{
       "succeeded", true
     }};
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
 
     m_huenicornCore->stop();
   }

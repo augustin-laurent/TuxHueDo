@@ -3,12 +3,12 @@
 #include <filesystem>
 #include <fstream>
 #include <future>
+#include <optional>
+#include <thread>
 #include <unordered_set>
+#include <atomic>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#include <crow.h>
-#pragma GCC diagnostic pop
+#include <httplib.h>
 
 #include <Huenicorn/EmbeddedWebrootFiles.hpp>
 
@@ -37,21 +37,14 @@ namespace Huenicorn
         {".svg", "image/svg+xml"}
       };
 
-      m_app.loglevel(crow::LogLevel::Warning);
-
-      CROW_ROUTE(m_app, "/").methods(crow::HTTPMethod::GET)
-      ([this](const crow::request& /*req*/, crow::response& res){
+      // Route for index
+      m_server.Get("/", [this](const httplib::Request& /*req*/, httplib::Response& res){
         _getWebFile(m_indexFile, res);
       });
 
-      CROW_ROUTE(m_app, "/api/version").methods(crow::HTTPMethod::GET)
-      ([this](const crow::request& /*req*/, crow::response& res){
+      // Route for version API
+      m_server.Get("/api/version", [this](const httplib::Request& /*req*/, httplib::Response& res){
         _getVersion(res);
-      });
-
-      CROW_ROUTE(m_app, "/<string>").methods(crow::HTTPMethod::GET)
-      ([this](const crow::request& /*req*/, crow::response& res, const std::string& param){
-        return _getWebFile(param, res);
       });
     }
 
@@ -72,7 +65,18 @@ namespace Huenicorn
      */
     bool running() const
     {
-      return m_running;
+      return m_running.load();
+    }
+
+
+    /**
+     * @brief Returns the port the server is listening on
+     * 
+     * @return unsigned Port number
+     */
+    unsigned port() const
+    {
+      return m_port;
     }
 
 
@@ -91,15 +95,16 @@ namespace Huenicorn
         return false;
       }
 
-      m_app.bindaddr(boundBackendIP);
-      m_app.port(port);
-      m_app.signal_clear();
-
-      m_running = true;
+      m_port = port;
+      m_boundIP = boundBackendIP;
+      m_running.store(true);
 
       _onStart();
-      m_app.run();
-
+      
+      // This is blocking - runs until server is stopped
+      m_server.listen(boundBackendIP, static_cast<int>(port));
+      
+      m_running.store(false);
       return true;
     }
 
@@ -147,8 +152,8 @@ namespace Huenicorn
         return false;
       }
 
-      m_app.stop();
-      m_running = false;
+      m_server.stop();
+      m_running.store(false);
       _onStop();
 
       return true;
@@ -171,13 +176,27 @@ namespace Huenicorn
     virtual void _onStop(){}
 
 
+    /**
+     * @brief Registers a static file route
+     * 
+     * @param filename Name of the file to serve
+     */
+    void _registerStaticFile(const std::string& filename)
+    {
+      std::string route = "/" + filename;
+      m_server.Get(route, [this, filename](const httplib::Request& /*req*/, httplib::Response& res){
+        _getWebFile(filename, res);
+      });
+    }
+
+
     // Handlers
     /**
      * @brief Sends the version of the backend project
      * 
      * @param res Pending HTTP connection
      */
-    virtual void _getVersion(crow::response& res) const = 0;
+    virtual void _getVersion(httplib::Response& res) const = 0;
 
 
     /**
@@ -185,10 +204,10 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP connection
      */
-    void _getWebFile(const std::string& filePath, crow::response& res) const
+    void _getWebFile(const std::string& filePath, httplib::Response& res) const
     {
       std::filesystem::path webFilePath = filePath;
-      if(webFilePath == ""){
+      if(webFilePath.empty()){
         webFilePath = m_indexFile;
       }
 
@@ -198,25 +217,29 @@ namespace Huenicorn
         webFileFullPath = "404.html";
       }
 
-      std::string extension = webFilePath.extension();
+      std::string extension = webFileFullPath.extension();
       std::string contentType = "text/plain";
 
       if(m_contentTypes.find(extension) != m_contentTypes.end()){
         contentType = m_contentTypes.at(extension);
       }
 
-      std::string response = Webroot::embeddedFiles.at(webFilePath);
-
-      res.set_header("Content-Type", contentType);
-      res.write(response);
-      res.end();
+      auto it = Webroot::embeddedFiles.find(webFileFullPath);
+      if(it != Webroot::embeddedFiles.end()){
+        res.set_content(it->second, contentType);
+      } else {
+        res.status = 404;
+        res.set_content("Not Found", "text/plain");
+      }
     }
 
 
     // Attributes
     std::string m_indexFile;
-    bool m_running{false};
-    crow::SimpleApp m_app;
+    std::atomic<bool> m_running{false};
+    unsigned m_port{0};
+    std::string m_boundIP;
+    httplib::Server m_server;
     std::unordered_map<std::string, std::string> m_contentTypes;
     std::unordered_set<std::string> m_webfileBlackList;
     std::optional<std::promise<bool>> m_readyWebUIPromise;

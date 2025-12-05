@@ -579,15 +579,18 @@ namespace Huenicorn
 
     cv::Mat subframeImage;
 
+    // Clear and rebuild the channel streams for this frame
+    m_channelStreams.clear();
+
     for(auto& [channelId, channel] : m_channels){
       if(channel.state() == Channel::State::Inactive){
         continue;
       }
 
-      auto& channelStream = m_channelStreams.at(channelId);
+      ChannelStream channelStream;
+      channelStream.id = channelId;
 
       if(channel.state() == Channel::State::PendingShutdown){
-        channelStream.id = channelId;
         channelStream.r = 0;
         channelStream.g = 0;
         channelStream.b = 0;
@@ -605,16 +608,17 @@ namespace Huenicorn
         glm::vec3 normalized = color.toNormalized();
         glm::vec3 correctedColor = glm::pow(normalized, glm::vec3(channel.gammaExponent()));
 
-        channelStream.id = channelId;
         channelStream.r = correctedColor.r;
         channelStream.g = correctedColor.g;
         channelStream.b = correctedColor.b;
       }
+
+      m_channelStreams.push_back(channelStream);
     }
 
     {
       std::lock_guard lock(m_streamerMutex);
-      if(m_streamer.get()){
+      if(m_streamer.get() && !m_channelStreams.empty()){
         m_streamer->streamChannels(m_channelStreams);
       }
     }

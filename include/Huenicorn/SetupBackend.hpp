@@ -18,7 +18,7 @@ namespace Huenicorn
    */
   class SetupBackend : public IRestServer
   {
-    using Callback = std::function<void(const nlohmann::json& data, crow::response& res)>;
+    using Callback = std::function<void(const nlohmann::json& data, httplib::Response& res)>;
 
   public:
     // Constructor / destructor
@@ -70,7 +70,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    virtual void _getVersion(crow::response& res) const override;
+    virtual void _getVersion(httplib::Response& res) const override;
 
   private:
     /**
@@ -78,7 +78,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _finish(crow::response& res);
+    void _finish(httplib::Response& res);
 
 
     /**
@@ -86,7 +86,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _abort(crow::response& res);
+    void _abort(httplib::Response& res);
 
 
     /**
@@ -94,7 +94,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _autodetectBridge(crow::response& res);
+    void _autodetectBridge(httplib::Response& res);
 
 
     /**
@@ -102,7 +102,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _configFilePath(crow::response& res);
+    void _configFilePath(httplib::Response& res);
 
 
     /**
@@ -111,7 +111,7 @@ namespace Huenicorn
      * @param req Pending HTTP request
      * @param res Pending HTTP response
      */
-    void _validateBridgeAddress(const crow::request& req, crow::response& res);
+    void _validateBridgeAddress(const httplib::Request& req, httplib::Response& res);
 
 
     /**
@@ -120,7 +120,7 @@ namespace Huenicorn
      * @param req Pending HTTP request
      * @param res Pending HTTP response
      */
-    void _validateCredentials(const crow::request& req, crow::response& res);
+    void _validateCredentials(const httplib::Request& req, httplib::Response& res);
 
 
     /**
@@ -128,7 +128,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _registerNewUser(crow::response& res);
+    void _registerNewUser(httplib::Response& res);
 
 
     // Attributes

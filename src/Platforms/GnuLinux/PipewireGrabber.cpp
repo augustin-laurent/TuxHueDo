@@ -197,13 +197,15 @@ namespace Huenicorn
     //capture->updateXdgContext = false;
 
     pw_init(NULL, NULL);
-    pw_core_events coreEvents;
+    
+    // Zero-initialize the events structures
+    pw_core_events coreEvents = {};
     coreEvents.version = PW_VERSION_CORE_EVENTS;
     coreEvents.info = _onCoreInfoCallback;
     coreEvents.done = _onCoreDoneCallback;
     coreEvents.error = _onCoreErrorCallback;
 
-    pw_stream_events streamEvents;
+    pw_stream_events streamEvents = {};
     streamEvents.version = PW_VERSION_STREAM_EVENTS;
     streamEvents.param_changed = _onStreamParamChanged;
     streamEvents.process = _onStreamProcess;
@@ -227,15 +229,13 @@ namespace Huenicorn
 
     std::string streamName = "HuenicornStream";
 
-    pw->stream = pw_stream_new_simple(
-      pw_main_loop_get_loop(pw->loop),
+    pw->stream = pw_stream_new(
+      core,
       streamName.c_str(),
-      props,
-      &streamEvents,
-      pw
+      props
     );
 
-    spa_hook streamListener;
+    spa_hook streamListener = {};
     pw_stream_add_listener(pw->stream, &streamListener, &streamEvents, pw);
 
 

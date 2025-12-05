@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include <glm/exponential.hpp>
@@ -13,7 +13,7 @@ namespace Huenicorn
 {
   // Type definitions
   class Channel;
-  using Channels = std::unordered_map<uint8_t, Channel>;
+  using Channels = std::map<uint8_t, Channel>;
 
 
   /**

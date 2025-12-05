@@ -42,7 +42,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    virtual void _getVersion(crow::response& res) const override;
+    virtual void _getVersion(httplib::Response& res) const override;
 
 
   private:
@@ -51,7 +51,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getWebUIStatus(crow::response& res) const;
+    void _getWebUIStatus(httplib::Response& res) const;
 
 
     /**
@@ -59,7 +59,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getEntertainmentConfigurations(crow::response& res) const;
+    void _getEntertainmentConfigurations(httplib::Response& res) const;
 
 
     /**
@@ -67,7 +67,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getChannel(crow::response& res, uint8_t channelId) const;
+    void _getChannel(httplib::Response& res, uint8_t channelId) const;
 
 
     /**
@@ -75,7 +75,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getChannels(crow::response& res) const;
+    void _getChannels(httplib::Response& res) const;
 
 
     /**
@@ -83,7 +83,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getDisplayInfo(crow::response& res) const;
+    void _getDisplayInfo(httplib::Response& res) const;
 
 
     /**
@@ -91,7 +91,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _getInterpolationInfo(crow::response& res) const;
+    void _getInterpolationInfo(httplib::Response& res) const;
 
 
     /**
@@ -99,7 +99,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setEntertainmentConfiguration(const crow::request& req, crow::response& res) const;
+    void _setEntertainmentConfiguration(const httplib::Request& req, httplib::Response& res) const;
 
 
     /**
@@ -107,7 +107,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setChannelUV(const crow::request& req, crow::response& res, uint8_t channelId) const;
+    void _setChannelUV(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const;
 
 
     /**
@@ -115,7 +115,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setChannelGammaFactor(const crow::request& req, crow::response& res, uint8_t channelId) const;
+    void _setChannelGammaFactor(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const;
 
 
     /**
@@ -123,7 +123,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setSubsampleWidth(const crow::request& req, crow::response& res) const;
+    void _setSubsampleWidth(const httplib::Request& req, httplib::Response& res) const;
 
 
     /**
@@ -131,7 +131,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setRefreshRate(const crow::request& req, crow::response& res) const;
+    void _setRefreshRate(const httplib::Request& req, httplib::Response& res) const;
 
 
     /**
@@ -139,7 +139,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setInterpolation(const crow::request& req, crow::response& res) const;
+    void _setInterpolation(const httplib::Request& req, httplib::Response& res) const;
 
 
     /**
@@ -147,7 +147,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _setChannelActivity(const crow::request& req, crow::response& res, uint8_t channelId) const;
+    void _setChannelActivity(const httplib::Request& req, httplib::Response& res, uint8_t channelId) const;
 
 
     /**
@@ -155,7 +155,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _saveProfile(crow::response& res) const;
+    void _saveProfile(httplib::Response& res) const;
 
 
     /**
@@ -163,7 +163,7 @@ namespace Huenicorn
      * 
      * @param res Pending HTTP response
      */
-    void _stop(crow::response& res) const;
+    void _stop(httplib::Response& res) const;
 
 
     // Attributes

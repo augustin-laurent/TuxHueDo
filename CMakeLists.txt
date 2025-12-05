@@ -14,11 +14,19 @@ set(BUILD_TESTS FALSE CACHE BOOL "Build tests")
 find_package(PkgConfig REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS imgproc)
 find_package(CURL REQUIRED)
-find_package(Crow REQUIRED)
 find_package(nlohmann_json 3.2.0 REQUIRED)
 find_library(MBEDTLS_LIBS mbedtls REQUIRED)
 find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
+
+# Fetch cpp-httplib (header-only HTTP library)
+include(FetchContent)
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG v0.18.1
+)
+FetchContent_MakeAvailable(httplib)
 
 
 # Generate version header
@@ -151,6 +159,7 @@ target_link_libraries(${BINARY_NAME} PUBLIC
   ${MBEDTLS_X509}
   ${MBEDTLS_CRYPTO}
   nlohmann_json::nlohmann_json
+  httplib::httplib
 )
 
 

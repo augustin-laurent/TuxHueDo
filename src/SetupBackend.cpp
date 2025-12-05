@@ -14,40 +14,55 @@ namespace Huenicorn
   IRestServer("setup.html"),
   m_huenicornCore(huenicornCore)
   {
-    CROW_ROUTE(m_app, "/api/finishSetup").methods(crow::HTTPMethod::POST)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Post("/api/finishSetup",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _finish(res);
     });
 
-    CROW_ROUTE(m_app, "/api/abort").methods(crow::HTTPMethod::POST)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Post("/api/abort",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _abort(res);
     });
 
-    CROW_ROUTE(m_app, "/api/autodetectBridge").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/autodetectBridge",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _autodetectBridge(res);
     });
   
-    CROW_ROUTE(m_app, "/api/configFilePath").methods(crow::HTTPMethod::GET)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Get("/api/configFilePath",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _configFilePath(res);
     });
 
-    CROW_ROUTE(m_app, "/api/validateBridgeAddress").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/validateBridgeAddress",
+    [this](const httplib::Request& req, httplib::Response& res){
       _validateBridgeAddress(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/validateCredentials").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& req, crow::response& res){
+    m_server.Put("/api/validateCredentials",
+    [this](const httplib::Request& req, httplib::Response& res){
       _validateCredentials(req, res);
     });
 
-    CROW_ROUTE(m_app, "/api/registerNewUser").methods(crow::HTTPMethod::PUT)
-    ([this](const crow::request& /*req*/, crow::response& res){
+    m_server.Put("/api/registerNewUser",
+    [this](const httplib::Request& /*req*/, httplib::Response& res){
       _registerNewUser(res);
     });
+
+    // Register static files
+    _registerStaticFile("setup.html");
+    _registerStaticFile("index.html");
+    _registerStaticFile("404.html");
+    _registerStaticFile("style.css");
+    _registerStaticFile("Channel.js");
+    _registerStaticFile("Rainbow.js");
+    _registerStaticFile("ScreenWidget.js");
+    _registerStaticFile("Utils.js");
+    _registerStaticFile("Version.js");
+    _registerStaticFile("WebUI.js");
+    _registerStaticFile("mainSetup.js");
+    _registerStaticFile("mainWebUI.js");
+    _registerStaticFile("logo.svg");
 
     m_webfileBlackList.insert("index.html");
   }
@@ -77,7 +92,7 @@ namespace Huenicorn
     }
 
     std::stringstream serviceUrlStream;
-    serviceUrlStream << "http://127.0.0.1:" << m_app.port();
+    serviceUrlStream << "http://127.0.0.1:" << port();
     std::string serviceURL = serviceUrlStream.str();
     Logger::log("Setup WebUI is ready and available at ", serviceURL);
 
@@ -85,36 +100,30 @@ namespace Huenicorn
   }
 
 
-  void SetupBackend::_getVersion(crow::response& res) const
+  void SetupBackend::_getVersion(httplib::Response& res) const
   {
     nlohmann::json jsonResponse = {
       {"version", m_huenicornCore->version()},
     };
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void SetupBackend::_finish(crow::response& res)
+  void SetupBackend::_finish(httplib::Response& res)
   {
     std::string response = "{}";
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
 
     stop();
   }
 
 
-  void SetupBackend::_abort(crow::response& res)
+  void SetupBackend::_abort(httplib::Response& res)
   {
     std::string response = "{}";
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
 
     m_aborted = true;
 
@@ -122,27 +131,23 @@ namespace Huenicorn
   }
 
 
-  void SetupBackend::_autodetectBridge(crow::response& res)
+  void SetupBackend::_autodetectBridge(httplib::Response& res)
   {
     nlohmann::json jsonResponse = m_huenicornCore->autodetectedBridge();
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void SetupBackend::_configFilePath(crow::response& res)
+  void SetupBackend::_configFilePath(httplib::Response& res)
   {
     nlohmann::json jsonResponse = {{"configFilePath", m_huenicornCore->configFilePath()}};
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void SetupBackend::_validateBridgeAddress(const crow::request& req, crow::response& res)
+  void SetupBackend::_validateBridgeAddress(const httplib::Request& req, httplib::Response& res)
   {
     const std::string& data = req.body;
     nlohmann::json jsonBridgeAddressData = nlohmann::json::parse(data);
@@ -152,13 +157,11 @@ namespace Huenicorn
     nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateBridgeAddress(bridgeAddress)}};
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void SetupBackend::_validateCredentials(const crow::request& req, crow::response& res)
+  void SetupBackend::_validateCredentials(const httplib::Request& req, httplib::Response& res)
   {
     const std::string& data = req.body;
     nlohmann::json jsonCredentials = nlohmann::json::parse(data);
@@ -168,18 +171,14 @@ namespace Huenicorn
     nlohmann::json jsonResponse = {{"succeeded", m_huenicornCore->validateCredentials(credentials)}};
 
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 
 
-  void SetupBackend::_registerNewUser(crow::response& res)
+  void SetupBackend::_registerNewUser(httplib::Response& res)
   {
     nlohmann::json jsonResponse = m_huenicornCore->registerNewUser();
     std::string response = jsonResponse.dump();
-    res.set_header("Content-Type", "application/json");
-    res.write(response);
-    res.end();
+    res.set_content(response, "application/json");
   }
 }
