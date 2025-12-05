@@ -1,14 +1,19 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME huenicorn)
-set(BINARY_NAME huenicorn)
+project(${PROJECT_NAME} VERSION 1.0.12)
 
-project(${PROJECT_NAME} VERSION 1.0.11)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
-
-set(BUILD_DOCUMENTATION FALSE CACHE BOOL "Build documentation")
-set(BUILD_TESTS FALSE CACHE BOOL "Build tests")
-
+# Build options
+option(BUILD_QT "Build Qt6 frontend" ON)
+option(BUILD_GTK "Build GTK4 frontend" OFF)
+option(BUILD_DOCUMENTATION "Build documentation" OFF)
+option(BUILD_TESTS "Build tests" OFF)
 
 # Check mandatory libraries
 find_package(PkgConfig REQUIRED)
@@ -18,16 +23,6 @@ find_package(nlohmann_json 3.2.0 REQUIRED)
 find_library(MBEDTLS_LIBS mbedtls REQUIRED)
 find_library(MBEDTLS_X509 mbedx509 REQUIRED)
 find_library(MBEDTLS_CRYPTO mbedcrypto REQUIRED)
-
-# Fetch cpp-httplib (header-only HTTP library)
-include(FetchContent)
-FetchContent_Declare(
-  httplib
-  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-  GIT_TAG v0.18.1
-)
-FetchContent_MakeAvailable(httplib)
-
 
 # Generate version header
 set(VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/Version.hpp")
@@ -39,54 +34,11 @@ configure_file(
   ${VERSION_HEADER}
 )
 
-# Generate embedded webroot header
-function(embed_directory TARGET_DIR)
-  file(GLOB_RECURSE WEB_FILES "${TARGET_DIR}/*")
-  set(CONCAT_CONTENT "")
+# ============================================================================
+# libhuenicorn - Core library
+# ============================================================================
 
-  foreach(DATA_FILE ${WEB_FILES})
-    get_filename_component(KEY ${DATA_FILE} NAME)
-    file(READ ${DATA_FILE} CONTENTS)
-
-    # Escape special characters
-    string(REPLACE "\\" "\\\\" CONTENTS "${CONTENTS}")
-    string(REPLACE "\"" "\\\"" CONTENTS "${CONTENTS}")
-    string(REPLACE "\n" "\\n" CONTENTS "${CONTENTS}")
-
-    set(KEY_VALUE "      {\"${KEY}\", \"${CONTENTS}\"},\n")
-    set(CONCAT_CONTENT "${CONCAT_CONTENT}${KEY_VALUE}")
-  endforeach()
-  set(EMBEDDED_FILES_CONTENT "${EMBEDDED_FILES_CONTENT}${CONCAT_CONTENT}" PARENT_SCOPE)
-endfunction()
-
-set(EMBEDDED_FILES_CONTENT "")
-embed_directory("${CMAKE_SOURCE_DIR}/webroot")
-embed_directory("${CMAKE_SOURCE_DIR}/assets")
-
-
-set(EMBEDDED_WEBROOT_HEADER "${CMAKE_CURRENT_BINARY_DIR}/include/Huenicorn/EmbeddedWebrootFiles.hpp")
-
-
-# Custom command to ensure re-running when files change
-add_custom_command(
-  OUTPUT ${EMBEDDED_WEBROOT_HEADER}
-  COMMAND ${CMAKE_COMMAND} -E echo "Regenerating embedded webroot header..."
-  COMMAND ${CMAKE_COMMAND} -E touch ${EMBEDDED_WEBROOT_HEADER}  # Ensures file gets updated
-  DEPENDS ${WEBROOT_FILES} ${ASSETS_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
-  COMMENT "Updating EmbeddedWebrootFiles.hpp because webroot or assets changed."
-)
-
-
-add_custom_target(generate_webroot_header DEPENDS ${EMBEDDED_WEBROOT_HEADER})
-
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/config/EmbeddedWebrootFiles.hpp.in
-  ${EMBEDDED_WEBROOT_HEADER}
-)
-
-# Declare executable
-add_executable(${BINARY_NAME}
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+add_library(huenicorn_core STATIC
   ${CMAKE_CURRENT_SOURCE_DIR}/src/ApiTools.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Channel.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Config.cpp
@@ -103,68 +55,35 @@ add_executable(${BINARY_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Interpolation.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/PlatformSelector.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/SetupBackend.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/Streamer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/TickSynchronizer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/UV.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/WebUIBackend.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/ApiTools.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Channel.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Color.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Config.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Credentials.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/CurlHttpClient.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Device.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/DtlsClient.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/DummyGrabber.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/EntertainmentConfiguration.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/EntertainmentConfigurationSelector.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/HttpRequestUtils.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/HuenicornCore.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/IGrabber.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/ImageProcessing.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Interpolation.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/IRestServer.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Logger.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/PlatformSelector.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/SetupBackend.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/Streamer.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/TickSynchronizer.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/TimingDefinitions.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/UV.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Huenicorn/WebUIBackend.hpp
-
   ${VERSION_HEADER}
-  ${EMBEDDED_WEBROOT_HEADER}
 )
 
-add_dependencies(${PROJECT_NAME} generate_version_header generate_webroot_header)
+add_dependencies(huenicorn_core generate_version_header)
 
-if(UNIX AND NOT APPLE) # For Gnu/Linux
+# Platform-specific sources for core
+if(UNIX AND NOT APPLE)
   include(cmake/platforms/GnuLinux.cmake)
 endif()
 
-set_target_properties(${BINARY_NAME} PROPERTIES CXX_STANDARD 20)
-
-target_include_directories(${BINARY_NAME} PUBLIC
+target_include_directories(huenicorn_core PUBLIC
   ${OpenCV_INCLUDE_DIRS}
-  include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(${BINARY_NAME} PUBLIC
+target_link_libraries(huenicorn_core PUBLIC
   ${OpenCV_LIBS}
   ${CURL_LIBRARIES}
   ${MBEDTLS_LIBS}
   ${MBEDTLS_X509}
   ${MBEDTLS_CRYPTO}
   nlohmann_json::nlohmann_json
-  httplib::httplib
 )
 
-
-target_compile_options(${BINARY_NAME} PRIVATE
-  -Werror
+target_compile_options(huenicorn_core PRIVATE
   -Wall
   -Wextra
   -Wnon-virtual-dtor
@@ -173,62 +92,69 @@ target_compile_options(${BINARY_NAME} PRIVATE
   -Wno-deprecated-copy
 )
 
+# ============================================================================
+# Qt6 Frontend
+# ============================================================================
 
-if(${BUILD_TESTS})
-  include(tests/AddTests.cmake)
-endif(${BUILD_TESTS})
+if(BUILD_QT)
+  find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
+  add_executable(huenicorn-qt
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/MainWindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/ScreenPartitionWidget.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/ChannelListWidget.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/SettingsDialog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt/TrayIcon.cpp
+  )
 
-if(${BUILD_DOCUMENTATION})
-  # Initializing Doxygen
+  target_include_directories(huenicorn-qt PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/qt
+  )
+
+  target_link_libraries(huenicorn-qt PRIVATE
+    huenicorn_core
+    Qt6::Widgets
+  )
+
+  target_compile_options(huenicorn-qt PRIVATE
+    -Wall -Wextra -pedantic
+  )
+endif()
+
+# ============================================================================
+# GTK4 Frontend (placeholder)
+# ============================================================================
+
+if(BUILD_GTK)
+  pkg_check_modules(GTK4 REQUIRED gtk4)
+  pkg_check_modules(ADWAITA REQUIRED libadwaita-1)
+
+  add_executable(huenicorn-gtk
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gtk/main.cpp
+  )
+
+  target_include_directories(huenicorn-gtk PRIVATE
+    ${GTK4_INCLUDE_DIRS}
+    ${ADWAITA_INCLUDE_DIRS}
+  )
+
+  target_link_libraries(huenicorn-gtk PRIVATE
+    huenicorn_core
+    ${GTK4_LIBRARIES}
+    ${ADWAITA_LIBRARIES}
+  )
+endif()
+
+# ============================================================================
+# Documentation
+# ============================================================================
+
+if(BUILD_DOCUMENTATION)
   find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
-
-  # Defining Doxyfile path
   set(doxyfile_in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile.doxygen)
-
-  # Setting Doxyfile properties
   set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
   set(DOXYGEN_EXTRACT_ALL YES)
   set(DOXYGEN_FULL_PATH_NAMES NO)
-
-  # Generating doxyfile
-  doxygen_add_docs(
-    doxygen
-    ${PROJECT_SOURCE_DIR}
-    COMMENT "Generate man pages"
-  )
-
-  # Building Doxygen documentation
-  add_custom_target(documentationBuild ALL
-    COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile_in}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
-  )
-endif(${BUILD_DOCUMENTATION})
-
-
-# Post build commands
-
-# Copy readme to build
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/README.md $<TARGET_FILE_DIR:${PROJECT_NAME}>/README.md
-)
-
-# Copy screenshots to build
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/screenshots $<TARGET_FILE_DIR:${PROJECT_NAME}>/screenshots
-)
-
-# Copy assets to build
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
-)
-
-# Copy license to build
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt $<TARGET_FILE_DIR:${PROJECT_NAME}>/LICENSE.txt
-)
+  doxygen_add_docs(doxygen ${PROJECT_SOURCE_DIR} COMMENT "Generate man pages")
+endif()

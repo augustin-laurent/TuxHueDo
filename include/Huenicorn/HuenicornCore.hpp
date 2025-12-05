@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <optional>
 #include <thread>
+#include <mutex>
 
 #include <nlohmann/json.hpp>
 
@@ -12,7 +13,6 @@
 #include <Huenicorn/EntertainmentConfiguration.hpp>
 #include <Huenicorn/EntertainmentConfigurationSelector.hpp>
 #include <Huenicorn/IGrabber.hpp>
-#include <Huenicorn/IRestServer.hpp>
 #include <Huenicorn/Streamer.hpp>
 #include <Huenicorn/TickSynchronizer.hpp>
 #include <Huenicorn/UV.hpp>
@@ -27,13 +27,6 @@ namespace Huenicorn
    */
   class HuenicornCore
   {
-    // Type definitions
-    struct ThreadedRestService
-    {
-      std::unique_ptr<IRestServer> server;
-      std::optional<std::thread> thread;
-    };
-
   public:
     // Constructor
     /**
@@ -151,6 +144,24 @@ namespace Huenicorn
 
 
     /**
+     * @brief Returns whether the configuration is complete (bridge address + credentials)
+     * 
+     * @return true Configuration is complete
+     * @return false Configuration is incomplete
+     */
+    bool isConfigured() const;
+
+
+    /**
+     * @brief Returns whether the core is initialized (grabber + selector ready)
+     * 
+     * @return true Core is initialized
+     * @return false Core is not initialized
+     */
+    bool isInitialized() const;
+
+
+    /**
      * @brief Returns the resolved Hue bridge IP address
      * 
      * @return nlohmann::json Object containing Hue bridge address and request status
@@ -225,14 +236,23 @@ namespace Huenicorn
 
     // Methods
     /**
-     * @brief Initiates Huenicorn and starts the main loop
+     * @brief Initializes the core components (grabber, settings, selector)
+     * 
+     * @return true Initialization succeeded
+     * @return false Initialization failed
+     */
+    bool initialize();
+
+
+    /**
+     * @brief Starts the streaming loop (blocks until stop() is called)
      * 
      */
     void start();
 
 
     /**
-     * @brief Stops the main loop
+     * @brief Stops the streaming loop
      * 
      */
     void stop();
@@ -306,15 +326,6 @@ namespace Huenicorn
 
 
     /**
-     * @brief Starts the initial setup wizard
-     *
-     * @return true Setup finished success
-     * @return false Setup was not completed
-    */
-    bool _runInitialSetup();
-
-
-    /**
      * Brief Initializes a grabber based on the graphical session
      * 
      * @return true Relevant grabber was found and initialized
@@ -324,24 +335,11 @@ namespace Huenicorn
 
 
     /**
-     * Brief Initializes the web UI
-    */
-    void _initWebUI();
-
-
-    /**
      * @brief Initializes the channels based on the profile settings
      * 
      * @param jsonProfile Data from the user-defined profile
      */
     void _initChannels(const nlohmann::json& jsonProfile);
-
-
-    /**
-     * @brief Opens the user's default browser on the Huenicorn page
-     * 
-     */
-    void _spawnBrowser();
 
 
     /**
@@ -385,8 +383,8 @@ namespace Huenicorn
     std::filesystem::path m_configRoot;
     Config m_config;
 
-    bool m_keepLooping;
-    bool m_openedSetup{false};
+    bool m_keepLooping{false};
+    bool m_initialized{false};
     std::unique_ptr<TickSynchronizer> m_tickSynchronizer;
 
     //  API structure wrapper
@@ -397,9 +395,6 @@ namespace Huenicorn
     // Streamer
     std::mutex m_streamerMutex;
     std::unique_ptr<Streamer> m_streamer;
-
-    // Service and flags
-    ThreadedRestService m_webUIService;
 
     //  Image Processing
     SharedGrabber m_grabber;

@@ -7,8 +7,6 @@
 #include <Huenicorn/Interpolation.hpp>
 #include <Huenicorn/Logger.hpp>
 #include <Huenicorn/HttpRequestUtils.hpp>
-#include <Huenicorn/SetupBackend.hpp>
-#include <Huenicorn/WebUIBackend.hpp>
 #include <Huenicorn/DummyGrabber.hpp>
 #include <Huenicorn/PlatformSelector.hpp>
 
@@ -103,6 +101,18 @@ namespace Huenicorn
   }
 
 
+  bool HuenicornCore::isConfigured() const
+  {
+    return m_config.initialSetupOk();
+  }
+
+
+  bool HuenicornCore::isInitialized() const
+  {
+    return m_initialized;
+  }
+
+
   nlohmann::json HuenicornCore::autodetectedBridge() const
   {
     auto detectedBridgeResponse = HttpRequestUtils::sendRequest("https://discovery.meethue.com/", "GET");
@@ -179,11 +189,16 @@ namespace Huenicorn
 
   void HuenicornCore::setRefreshRate(unsigned refreshRate)
   {
-    refreshRate = std::min(refreshRate, m_grabber->displayRefreshRate());
+    if(m_grabber){
+      refreshRate = std::min(refreshRate, m_grabber->displayRefreshRate());
+    }
 
     m_config.setRefreshRate(refreshRate);
     refreshRate = m_config.refreshRate();
-    m_tickSynchronizer->setTickInterval(1.0f / refreshRate);
+    
+    if(m_tickSynchronizer){
+      m_tickSynchronizer->setTickInterval(1.0f / refreshRate);
+    }
   }
 
 
@@ -193,35 +208,44 @@ namespace Huenicorn
   }
 
 
+  bool HuenicornCore::initialize()
+  {
+    if(m_initialized){
+      return true;
+    }
+
+    if(!m_config.initialSetupOk()){
+      Logger::warn("Configuration not complete. Please run setup first.");
+      return false;
+    }
+
+    // Initialize settings and entertainment configurations ONLY
+    // Grabber initialization is deferred to start() because it may
+    // trigger blocking system dialogs (XDG Desktop Portal screen selection)
+    if(!_initSettings()){
+      Logger::error("Could not load suitable entertainment configuration.");
+      return false;
+    }
+
+    m_initialized = true;
+    return true;
+  }
+
+
   void HuenicornCore::start()
   {
-    if(!m_config.initialSetupOk()){
-      if(!_runInitialSetup()){
+    if(!m_initialized){
+      if(!initialize()){
         return;
       }
     }
 
-    if(!_initGrabber()){
-      Logger::error("Could not start any grabber");
-      return;
-    }
-
-    if(!_initSettings()){
-      Logger::error("Could not load suitable entertainment configuration.");
-      return;
-
-      // TODO : Add tool to create entertainment configurations inside Huenicorn
-      // so the official application would no longer be a requirement
-    }
-
-    _initWebUI();
-
-
-    // Spawn UI if no profiles are found
-    auto optJsonProfile = _getProfile();
-    if(!optJsonProfile.has_value() && !m_openedSetup){
-      std::thread spawnBrowser([this](){_spawnBrowser();});
-      spawnBrowser.detach();
+    // Initialize grabber when starting (may show screen selection dialog)
+    if(!m_grabber){
+      if(!_initGrabber()){
+        Logger::error("Could not start any grabber");
+        return;
+      }
     }
 
     _startStreamingLoop();
@@ -343,34 +367,14 @@ namespace Huenicorn
 
   bool HuenicornCore::_initSettings()
   {
+    // Use defaults for refresh rate and subsample if not already configured
+    // These will be updated when the grabber is initialized
     if(m_config.refreshRate() == 0){
-      m_config.setRefreshRate(m_grabber->displayRefreshRate());
+      m_config.setRefreshRate(60); // Default 60 Hz
     }
 
     if(m_config.subsampleWidth() == 0){
-      auto displayResolution = m_grabber->displayResolution();
-      float percentThreshold = 1.0;
-      auto subsampleCandidates = m_grabber->subsampleResolutionCandidates();
-
-      unsigned bestSubsampleWidth = subsampleCandidates.back().x;
-      for(int i = subsampleCandidates.size(); i--;){
-        unsigned candidate = subsampleCandidates.at(i).x;
-
-        if((static_cast<float>(candidate) / displayResolution.x) * 100 >= percentThreshold){
-          bestSubsampleWidth = candidate;
-          break;
-        }
-      }
-
-      m_config.setSubsampleWidth(bestSubsampleWidth);
-    }
-
-    const float warningThreshold = 50.0;
-
-    float ratio = static_cast<float>(m_config.subsampleWidth()) / m_grabber->displayResolution().x;
-
-    if(ratio >= warningThreshold / 100){
-      Logger::warn("Subsample width is >= ", warningThreshold, "% of the display resolution. Color computation might be intensive.");
+      m_config.setSubsampleWidth(20); // Default 20 px
     }
 
     Logger::log("Configuration is ready. Feel free to modify it manually by editing ", std::quoted(m_config.configFilePath().string()));
@@ -391,27 +395,6 @@ namespace Huenicorn
     }
 
     _enableEntertainmentConfiguration(entertainmentConfigurationId);
-
-    return true;
-  }
-
-
-  bool HuenicornCore::_runInitialSetup()
-  {
-    Logger::log("Starting setup backend");
-    unsigned port = m_config.restServerPort();
-    const std::string& boundBackendIP = m_config.boundBackendIP();
-
-    SetupBackend sb(this);
-    sb.start(port, boundBackendIP);
-
-    if(sb.aborted()){
-      Logger::log("Initial setup was aborted");
-      return false;
-    }
-
-    Logger::log("Finished setup");
-    m_openedSetup = true;
 
     return true;
   }
@@ -443,22 +426,6 @@ namespace Huenicorn
     }
 
     return false;
-  }
-
-
-  void HuenicornCore::_initWebUI()
-  {
-    std::promise<bool> readyWebUIPromise;
-    auto readyWebUIFuture = readyWebUIPromise.get_future();
-
-    unsigned restServerPort = m_config.restServerPort();
-    const std::string& boundBackendIP = m_config.boundBackendIP();
-    m_webUIService.server = std::make_unique<WebUIBackend>(this);
-    m_webUIService.thread.emplace([&](){
-      m_webUIService.server->start(restServerPort, boundBackendIP, std::move(readyWebUIPromise));
-    });
-
-    readyWebUIFuture.wait();
   }
 
 
@@ -499,21 +466,6 @@ namespace Huenicorn
 
     m_channels = std::move(channels);
     _updateStreamChannelsSize();
-  }
-
-
-  void HuenicornCore::_spawnBrowser()
-  {
-    while (!m_webUIService.server->running()){
-      std::this_thread::sleep_for(100ms);
-    }
-
-    std::stringstream serviceUrlStream;
-    serviceUrlStream << "http://127.0.0.1:" << m_config.restServerPort();
-    std::string serviceURL = serviceUrlStream.str();
-    Logger::log("Management WebUI is ready and available at ", serviceURL);
-
-    platformAdapter.openWebBrowser(serviceURL);
   }
 
 
@@ -563,9 +515,6 @@ namespace Huenicorn
     }
 
     _shutdown();
-
-    m_webUIService.server->stop();
-    m_webUIService.thread.value().join();
   }
 
 
