@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+369c0dda7181333cb576c7b6a99c8ed9 CMakeFiles/generate_version_header
+369c0dda7181333cb576c7b6a99c8ed9 CMakeFiles/generate_webroot_header
+8f0c0e918e99acb38e240ed755b0b24e include/Huenicorn/EmbeddedWebrootFiles.hpp
